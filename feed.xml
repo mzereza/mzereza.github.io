@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" /><updated>2026-04-04T00:15:39+02:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Zereza’s Blog</title><subtitle>Blog de ciberseguridad. Writeups, notas técnicas e investigación.</subtitle><author><name>Miguel Peñaranda</name><email>mig.penaranda07@gmail.com</email></author><entry xml:lang="es"><title type="html">RetSpill: De CHF en Kernel a LPE</title><link href="http://0.0.0.0:4000/posts/kernel-retspill/" rel="alternate" type="text/html" title="RetSpill: De CHF en Kernel a LPE" /><published>2026-04-02T00:00:00+02:00</published><updated>2026-04-02T00:00:00+02:00</updated><id>http://0.0.0.0:4000/posts/kernel-retspill</id><content type="html" xml:base="http://0.0.0.0:4000/posts/kernel-retspill/"><![CDATA[<h2 id="disclaimer">Disclaimer</h2>
+<p>Esta técnica no es de mi autoría; puedes consultar la investigación original aquí:<br />
+<a href="https://adamdoupe.com/publications/retspill-ccs2023.pdf">https://adamdoupe.com/publications/retspill-ccs2023.pdf</a></p>
+
+<hr />
+
+<h2 id="tldr">TL;DR</h2>
+<p>RetSpill permite transformar un <strong>control flow hijack limitado en kernel</strong> en una primitiva más potente aprovechando cómo el kernel maneja el stack.</p>
+
+<p>En este post explico la intuición, cómo lo entendí resolviendo un reto, y cómo se traduce en una LPE.</p>
+
+<h2 id="introducción">Introducción</h2>
+<p>RetSpill es una técnica que aparece en el contexto de explotación de kernel cuando tenemos un <strong>Control Flow Hijack (CHF)</strong> pero no suficiente control para hacer ROP directamente.</p>
+
+<p>Aprendí esta técnica resolviendo un reto de <a href="https://pwn.college">PwnCollege</a> dónde ya había conseguido un <strong>CFH</strong>, pero no sabia <strong>qué hacer con ese control limitado</strong>.</p>
+
+<p>En este post no voy a repetir el paper, sino explicar:</p>
+<ul>
+  <li>Qué problema resuelve RetSpill</li>
+  <li>La intuición detrás de la técnica</li>
+  <li>Cómo se aplica en un escenario real</li>
+</ul>
+
+<h2 id="el-problema-chf-no-siempre-es-suficiente">El problema: CHF no siempre es suficiente</h2>
+<p>Antes de hablar de RetSpill, hay que entender la limitación clave.</p>
+
+<p>En muchos retos de kernel:</p>
+<ul>
+  <li>Puedes redirigir ejecución <strong>(CHF)</strong></li>
+  <li>Pero <strong>no controlas completamente los registros o el stack</strong></li>
+  <li>O <strong>no encuentras un gadget para pivotar</strong></li>
+</ul>
+
+<p>Además normalmente <strong>estás restringido por mitigaciones (SMEP, SMAP, KASLR, etc.)</strong></p>
+
+<p>En resumen: tienes control… <strong>pero no el suficiente para conseguir una explotación completa</strong></p>
+
+<p>Aquí es donde entra <strong>RetSpill</strong>.</p>
+
+<h2 id="intuición-de-retspill">Intuición de RetSpill</h2>
+<p>La idea central de RetSpill es:</p>
+
+<blockquote>
+  <p>Aprovechar cómo el kernel guarda y reutiliza datos controlados por el usuario en el stack para que, por ejemplo, con un gadget tipo <code class="language-plaintext highlighter-rouge">add rsp, X ; ret</code> puedas pivotar y hacer una <strong>ROP Chain completa</strong>.</p>
+</blockquote>
+
+<p>Explicado de forma informal:</p>
+<ul>
+  <li>El kernel hace pushes/pops en el stack constantemente</li>
+  <li>Algunos de esos valores pueden acabar siendo <strong>controlables indirectamente</strong></li>
+  <li>Si logras alinear eso con un <code class="language-plaintext highlighter-rouge">ret</code>, puedes influir en el flujo de ejecución</li>
+</ul>
+
+<p>No es un stack overflow clásico, sino más bien: <strong>reutilización de estado residual del stack</strong></p>
+
+<h2 id="qué-se-spillea-realmente">¿Qué se “Spillea” realmente?</h2>
+
+<blockquote>
+  <p><em>En este post me centraré especialmente abusar de la estructura pt_regs, para más información sobre otrás formas de llevar a cabo RetSpill consulte el <a href="https://adamdoupe.com/publications/retspill-ccs2023.pdf">paper original</a>.</em></p>
+</blockquote>
+
+<p>Cuando se realiza una syscall, el kernel transiciona de <strong>userland a kernel space</strong>. Antes de ejecutar cualquier lógica, necesita preservar el contexto del proceso en userland.</p>
+
+<p>Para ello, guarda el estado de los registros en el <strong>kernel stack del hilo actual</strong>, empaquetándolo en una estructura llamada <code class="language-plaintext highlighter-rouge">pt_regs</code>.</p>
+
+<p>Esta estructura contiene información como:</p>
+<ul>
+  <li>el puntero de instrucción (<code class="language-plaintext highlighter-rouge">rip</code>)</li>
+  <li>el stack pointer (<code class="language-plaintext highlighter-rouge">rsp</code>)</li>
+  <li>flags (<code class="language-plaintext highlighter-rouge">rflags</code>)</li>
+  <li>registros generales (<code class="language-plaintext highlighter-rouge">rax</code>, <code class="language-plaintext highlighter-rouge">rbx</code>, etc.)</li>
+</ul>
+
+<p>Una definición simplificada sería algo así:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+</pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">pt_regs</span> <span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">r15</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">r14</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">r13</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">r12</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">rbp</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">rbx</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">r11</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">r10</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">r9</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">r8</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">rax</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">rcx</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">rdx</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">rsi</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">rdi</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">orig_rax</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">rip</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">cs</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">eflags</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">rsp</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">ss</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>En muchos escenarios de explotación, varios de estos registros provienen directamente de userland, por lo que tenemos cierto grado de control sobre su contenido.</p>
+
+<p>Esto abre una posibilidad interesante: podemos hacer que valores controlados por nosotros acaben dentro de la región del stack donde se construye <code class="language-plaintext highlighter-rouge">pt_regs</code>. A partir de ahí, si conseguimos redirigir la ejecución a un gadget adecuado (por ejemplo, un <code class="language-plaintext highlighter-rouge">add rsp, X ; ret</code>), podemos <strong>pivotar el stack</strong> hacia esa zona y reutilizar esos valores como una ROP chain.</p>
+
+<p>En otras palabras, <code class="language-plaintext highlighter-rouge">pt_regs</code> deja de ser solo un mecanismo de guardado de contexto y pasa a convertirse en una <strong>superficie útil para construir control de ejecución</strong>.</p>
+
+<p><img src="/assets/img/posts/retspill/kernel_stack.png" alt="Kernel Stack" /></p>
+
+<h2 id="del-concepto-a-la-explotación">Del concepto a la explotación</h2>
+
+<p>Me gustaría explicar en detalle la solución del reto de <strong>PwnCollege</strong> donde aprendí y apliqué esta técnica. Sin embargo, hacerlo iría en contra de sus políticas, así que voy a tomar otro enfoque.</p>
+
+<p>En lugar de eso, he preparado un pequeño reto propio junto con su correspondiente writeup, donde reproduzco la idea clave detrás de RetSpill en un entorno más controlado y fácil de seguir.</p>
+
+<p><a href="/challenges/spillme">SpillMe Writeup</a></p>
+
+<h2 id="limitaciones-y-condiciones">Limitaciones y condiciones</h2>
+
+<p>RetSpill no es un ataque por sí mismo, sino una técnica que <strong>parte de ciertas primitivas previas</strong>. En particular, normalmente necesitas:</p>
+
+<ul>
+  <li>Algún tipo de <strong>Control Flow Hijack (CHF)</strong></li>
+  <li>Un <strong>leak de KASLR</strong>, en caso de que esta mitigación esté activa</li>
+</ul>
+
+<p>Es decir, RetSpill no te da control inicial, sino que sirve para <strong>amplificar un control ya existente pero limitado</strong>.</p>
+
+<p>Además, en muchos escenarios reales hay un trade-off importante: <strong>el propio bug que te da el CHF puede restringir qué registros controlas.</strong></p>
+
+<p>Por ejemplo, puede que consigas redirigir la ejecución, pero:</p>
+<ul>
+  <li>no controles completamente los registros en Userland</li>
+  <li>algunos registros hayan sido sobrescritos o saneados</li>
+  <li>el estado del stack no sea totalmente predecible</li>
+</ul>
+
+<p>Estas limitaciones pueden complicar el uso de RetSpill, ya que la técnica depende precisamente de <strong>aprovechar estado existente en el stack</strong>. Si ese estado no es suficientemente controlable o fiable, la explotación se vuelve mucho más compleja.</p>
+
+<h2 id="conclusión">Conclusión</h2>
+
+<p>RetSpill no es una técnica para obtener control, sino para <strong>amplificar control limitado</strong>.</p>
+
+<p>Y precisamente ahí está su valor: en escenarios modernos de explotación de kernel, donde las nuevas mitigaciones dificultan cada vez más conseguir un exploit completo de forma directa, técnicas como esta permiten exprimir al máximo primitivas débiles o incompletas.</p>
+
+<hr />
+
+<h2 id="referencias">Referencias</h2>
+<ul>
+  <li>Paper original: <a href="https://adamdoupe.com/publications/retspill-ccs2023.pdf">https://adamdoupe.com/publications/retspill-ccs2023.pdf</a></li>
+</ul>]]></content><author><name>Miguel Peñaranda</name><email>mig.penaranda07@gmail.com</email></author><category term="Kernel" /><summary type="html"><![CDATA[Cómo pasar de un Control Flow Hijack a LPE a través de datos controlados por el usuario en el Kernel Stack.]]></summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="http://0.0.0.0:4000/assets/img/posts/retspill/retspill_post.png" /><media:content medium="image" url="http://0.0.0.0:4000/assets/img/posts/retspill/retspill_post.png" xmlns:media="http://search.yahoo.com/mrss/" /></entry></feed>

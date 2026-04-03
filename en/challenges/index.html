@@ -1,0 +1,237 @@
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>challenges — Zereza's Blog</title>
+  <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230E1120'/><circle cx='16' cy='16' r='6' fill='none' stroke='%237EC8E3' stroke-width='2'/><circle cx='16' cy='16' r='2' fill='%237EC8E3'/></svg>">
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>challenges | Zereza’s Blog</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="challenges" />
+<meta name="author" content="Miguel Peñaranda" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación." />
+<meta property="og:description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación." />
+<link rel="canonical" href="http://0.0.0.0:4000/en/challenges/" />
+<meta property="og:url" content="http://0.0.0.0:4000/en/challenges/" />
+<meta property="og:site_name" content="Zereza’s Blog" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="challenges" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Miguel Peñaranda"},"description":"Blog de ciberseguridad. Writeups, notas técnicas e investigación.","headline":"challenges","url":"http://0.0.0.0:4000/en/challenges/"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="/en/" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      Zereza's Blog
+    </a>
+    <ul class="nav__links" id="nav-links">
+      <li><a href="/en/" >home</a></li>
+      <li><a href="/en/about/" >whoami</a></li>
+      <li><a href="/en/posts/" >posts</a></li>
+      <li><a href="/en/challenges/" class="active">challenges</a></li>
+    </ul>
+    <div class="nav__tools">
+      <div class="lang-switch" aria-label="Language switcher">
+        <a href="/challenges/" >ES</a>
+        <a href="/en/challenges/" class="active">EN</a>
+      </div>
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener" class="nav__cta">github ↗</a>
+    </div>
+    <button class="nav__burger" onclick="document.getElementById('nav-links').classList.toggle('open')">≡</button>
+  </div>
+</nav>
+
+<main>
+<div class="page">
+  <div class="section-head" style="padding-top:48px;">
+    <h2>solved <span>challenges</span></h2>
+  </div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;">
+    
+    
+    
+    
+    <div style="background:var(--bg-card);border:1px solid var(--border-card);border-radius:12px;padding:14px 20px;min-width:100px;text-align:center;">
+      <div style="font-family:var(--font);font-size:24px;font-weight:700;color:var(--accent);">6</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">total</div>
+    </div>
+    <div style="background:var(--bg-card);border:1px solid var(--border-card);border-radius:12px;padding:14px 20px;min-width:100px;text-align:center;"><div style="font-family:var(--font);font-size:24px;font-weight:700;color:var(--peach);">6</div><div style="font-size:11px;color:var(--text-dim);margin-top:2px;">pwn</div></div>
+    
+    
+  </div>
+  <div class="challenge-search">
+    <label class="challenge-search__label" for="challenge-folder-search-input">search challenge</label>
+    <div class="challenge-search__input-wrap">
+      <input id="challenge-folder-search-input" class="challenge-search__input" type="search" placeholder="name, platform, category, difficulty or keywords" autocomplete="off">
+      <span class="challenge-search__hint">search challenges across all folders</span>
+    </div>
+    <p class="challenge-search__status"><span id="challenge-folder-status-label">visible folders</span>: <span id="challenge-folder-visible">0</span></p>
+  </div>
+  <div class="folder-grid" id="folder-grid">
+    
+    
+      
+      <a class="folder-card" href="/en/challenges/htb/" data-search="htb challenges and labs from hack the box. ">
+        <div class="folder-card__media"><img src="/assets/img/challenges-folders/logo-htb.svg" alt="HTB"></div>
+        <div class="folder-card__body"><p class="folder-card__eyebrow">folder</p><h3 class="folder-card__title">HTB</h3><p class="folder-card__desc">Challenges and labs from Hack The Box.</p><p class="folder-card__meta">0 challenges</p></div>
+        <span class="folder-card__arrow">open →</span>
+      </a>
+    
+      
+      <a class="folder-card" href="/en/challenges/hackon-2026/" data-search="hackon 2026 challenges and exercises from the hackon ctf organized by urjc. plin plin plon ret2libc pwn easy ret2libc libc buffer overflow rop pwntools glibc plin plon plin got overwrite pwn easy got overwrite format string pwntools infant notes use after free pwn easy uaf use after free tcache heap sessiond stack pivot & srop pwn medium stack pivot srop sigreturn buffer overflow pwntools crazy notes advanced heap exploitation & fsop pwn hard uaf use after free unsorted bin heap tcache poisoning fsop safe linking ">
+        <div class="folder-card__media"><img src="/assets/img/challenges-folders/logo-hackon.png" alt="HackOn 2026"></div>
+        <div class="folder-card__body"><p class="folder-card__eyebrow">folder</p><h3 class="folder-card__title">HackOn 2026</h3><p class="folder-card__desc">Challenges and exercises from the HackOn CTF organized by URJC.</p><p class="folder-card__meta">5 challenges</p></div>
+        <span class="folder-card__arrow">open →</span>
+      </a>
+    
+      
+      <a class="folder-card" href="/en/challenges/mis-retos/" data-search="my challenges challenges created by me. spillme kernel chf + retspill pwn medium kernel retspill kpti smap smep qemu module ">
+        <div class="folder-card__media"><img src="/assets/img/challenges-folders/logo-mis-retos.png" alt="My Challenges"></div>
+        <div class="folder-card__body"><p class="folder-card__eyebrow">folder</p><h3 class="folder-card__title">My Challenges</h3><p class="folder-card__desc">Challenges created by me.</p><p class="folder-card__meta">1 challenges</p></div>
+        <span class="folder-card__arrow">open →</span>
+      </a>
+    
+      
+      <a class="folder-card" href="/en/challenges/otros/" data-search="others any platform or collection that does not fit the main folders. spillme kernel chf + retspill pwn medium kernel retspill kpti smap smep qemu module ">
+        <div class="folder-card__icon">/</div>
+        <div class="folder-card__body"><p class="folder-card__eyebrow">folder</p><h3 class="folder-card__title">Others</h3><p class="folder-card__desc">Any platform or collection that does not fit the main folders.</p><p class="folder-card__meta">1 challenges</p></div>
+        <span class="folder-card__arrow">open →</span>
+      </a>
+    
+  </div>
+  <div class="challenge-grid is-hidden" id="challenge-search-results">
+    
+    
+      
+      
+      <article class="challenge-search-result challenge-card" data-search="crazy notes advanced heap exploitation & fsop pwn hard hackon 2026 uaf use after free unsorted bin heap tcache poisoning fsop safe linking writeup read">
+        <div class="challenge-card__top"><div class="challenge-card__badges"><span class="platform-badge">Advanced Heap Exploitation & FSOP</span><span class="folder-badge">HackOn 2026</span></div><span class="post-card__tag tag-pwn">pwn</span></div>
+        <div class="challenge-card__body"><a class="challenge-card__title" href="/en/challenges/crazy-notes/">Crazy Notes</a></div>
+        <div class="challenge-card__foot"><a href="/en/challenges/crazy-notes/" class="challenge-card__link">read writeup →</a><span class="diff diff-hard">hard</span></div>
+      </article>
+    
+      
+      
+      <article class="challenge-search-result challenge-card" data-search="sessiond stack pivot & srop pwn medium hackon 2026 stack pivot srop sigreturn buffer overflow pwntools writeup read">
+        <div class="challenge-card__top"><div class="challenge-card__badges"><span class="platform-badge">Stack Pivot & SROP</span><span class="folder-badge">HackOn 2026</span></div><span class="post-card__tag tag-pwn">pwn</span></div>
+        <div class="challenge-card__body"><a class="challenge-card__title" href="/en/challenges/sessiond/">Sessiond</a></div>
+        <div class="challenge-card__foot"><a href="/en/challenges/sessiond/" class="challenge-card__link">read writeup →</a><span class="diff diff-medium">medium</span></div>
+      </article>
+    
+      
+      
+      <article class="challenge-search-result challenge-card" data-search="infant notes use after free pwn easy hackon 2026 uaf use after free tcache heap writeup read">
+        <div class="challenge-card__top"><div class="challenge-card__badges"><span class="platform-badge">Use After Free</span><span class="folder-badge">HackOn 2026</span></div><span class="post-card__tag tag-pwn">pwn</span></div>
+        <div class="challenge-card__body"><a class="challenge-card__title" href="/en/challenges/infant-notes/">Infant Notes</a></div>
+        <div class="challenge-card__foot"><a href="/en/challenges/infant-notes/" class="challenge-card__link">read writeup →</a><span class="diff diff-easy">easy</span></div>
+      </article>
+    
+      
+      
+      <article class="challenge-search-result challenge-card" data-search="spillme kernel chf + retspill pwn medium otros kernel retspill kpti smap smep qemu module writeup read">
+        <div class="challenge-card__top"><div class="challenge-card__badges"><span class="platform-badge">Kernel CHF + RetSpill</span><span class="folder-badge">Otros</span></div><span class="post-card__tag tag-pwn">pwn</span></div>
+        <div class="challenge-card__body"><a class="challenge-card__title" href="/en/challenges/spillme/">SpillMe</a></div>
+        <div class="challenge-card__foot"><a href="/en/challenges/spillme/" class="challenge-card__link">read writeup →</a><span class="diff diff-medium">medium</span></div>
+      </article>
+    
+      
+      
+      <article class="challenge-search-result challenge-card" data-search="plin plon plin got overwrite pwn easy hackon 2026 got overwrite format string pwntools writeup read">
+        <div class="challenge-card__top"><div class="challenge-card__badges"><span class="platform-badge">GOT Overwrite</span><span class="folder-badge">HackOn 2026</span></div><span class="post-card__tag tag-pwn">pwn</span></div>
+        <div class="challenge-card__body"><a class="challenge-card__title" href="/en/challenges/plin-plon-plin/">Plin Plon Plin</a></div>
+        <div class="challenge-card__foot"><a href="/en/challenges/plin-plon-plin/" class="challenge-card__link">read writeup →</a><span class="diff diff-easy">easy</span></div>
+      </article>
+    
+      
+      
+      <article class="challenge-search-result challenge-card" data-search="plin plin plon ret2libc pwn easy hackon 2026 ret2libc libc buffer overflow rop pwntools glibc writeup read">
+        <div class="challenge-card__top"><div class="challenge-card__badges"><span class="platform-badge">Ret2Libc</span><span class="folder-badge">HackOn 2026</span></div><span class="post-card__tag tag-pwn">pwn</span></div>
+        <div class="challenge-card__body"><a class="challenge-card__title" href="/en/challenges/plin-plin-plon/">Plin Plin Plon</a></div>
+        <div class="challenge-card__foot"><a href="/en/challenges/plin-plin-plon/" class="challenge-card__link">read writeup →</a><span class="diff diff-easy">easy</span></div>
+      </article>
+    
+  </div>
+  <div id="folder-search-empty" class="challenge-search-empty is-hidden">no challenges match that search</div>
+  <div style="height:80px;"></div>
+</div>
+<script>
+  (function () {
+    var input = document.getElementById('challenge-folder-search-input');
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.folder-card'));
+    var results = Array.prototype.slice.call(document.querySelectorAll('.challenge-search-result'));
+    var folderGrid = document.getElementById('folder-grid');
+    var resultsGrid = document.getElementById('challenge-search-results');
+    var visibleCount = document.getElementById('challenge-folder-visible');
+    var statusLabel = document.getElementById('challenge-folder-status-label');
+    var emptyState = document.getElementById('folder-search-empty');
+    if (!input || !cards.length || !results.length || !folderGrid || !resultsGrid || !visibleCount || !statusLabel || !emptyState) return;
+    visibleCount.textContent = String(cards.length);
+    function normalize(value) { return (value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); }
+    function filterFolders() {
+      var query = normalize(input.value);
+      var matches = 0;
+      if (!query) {
+        results.forEach(function (result) { result.hidden = false; });
+        folderGrid.classList.remove('is-hidden');
+        resultsGrid.classList.add('is-hidden');
+        emptyState.classList.add('is-hidden');
+        statusLabel.textContent = 'visible folders';
+        visibleCount.textContent = String(cards.length);
+        return;
+      }
+      folderGrid.classList.add('is-hidden');
+      statusLabel.textContent = 'found challenges';
+      results.forEach(function (result) {
+        var haystack = normalize(result.getAttribute('data-search'));
+        var isVisible = haystack.indexOf(query) !== -1;
+        result.hidden = !isVisible;
+        if (isVisible) matches += 1;
+      });
+      visibleCount.textContent = String(matches);
+      if (matches === 0) { resultsGrid.classList.add('is-hidden'); emptyState.classList.remove('is-hidden'); }
+      else { resultsGrid.classList.remove('is-hidden'); emptyState.classList.add('is-hidden'); }
+    }
+    input.addEventListener('input', filterFolders);
+  })();
+</script>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__brand">
+        <span class="footer__brand-dot"></span>
+        Zereza's Blog
+      </div>
+      <div class="footer__copy">© 2026 Miguel Peñaranda</div>
+    </div>
+    <div class="footer__links">
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener">github</a>
+      <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener">linkedin</a>
+      <a href="mailto:mig.penaranda07@gmail.com">email</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

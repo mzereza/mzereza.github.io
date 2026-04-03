@@ -1,0 +1,342 @@
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zereza's Blog · security research · binary exploitation · ctf</title>
+  <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230E1120'/><circle cx='16' cy='16' r='6' fill='none' stroke='%237EC8E3' stroke-width='2'/><circle cx='16' cy='16' r='2' fill='%237EC8E3'/></svg>">
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Zereza’s Blog | security research · binary exploitation · ctf</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Zereza’s Blog" />
+<meta name="author" content="Miguel Peñaranda" />
+<meta property="og:locale" content="es" />
+<meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación." />
+<meta property="og:description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación." />
+<link rel="canonical" href="http://0.0.0.0:4000/" />
+<meta property="og:url" content="http://0.0.0.0:4000/" />
+<meta property="og:site_name" content="Zereza’s Blog" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Zereza’s Blog" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","author":{"@type":"Person","name":"Miguel Peñaranda"},"description":"Blog de ciberseguridad. Writeups, notas técnicas e investigación.","headline":"Zereza’s Blog","name":"Zereza’s Blog","url":"http://0.0.0.0:4000/"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="/" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      Zereza's Blog
+    </a>
+    <ul class="nav__links" id="nav-links">
+      <li><a href="/" class="active">inicio</a></li>
+      <li><a href="/about/" >whoami</a></li>
+      <li><a href="/posts/" >posts</a></li>
+      <li><a href="/challenges/" >retos</a></li>
+    </ul>
+    <div class="nav__tools">
+      <div class="lang-switch" aria-label="Language switcher">
+        <a href="/" class="active">ES</a>
+        <a href="/en/" >EN</a>
+      </div>
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener" class="nav__cta">github ↗</a>
+    </div>
+    <button class="nav__burger" onclick="document.getElementById('nav-links').classList.toggle('open')">≡</button>
+  </div>
+</nav>
+
+<main><div class="page">
+  
+  
+  
+
+  <section class="hero">
+    <div class="hero__left">
+      <h1 class="hero__title">
+        <span>Zereza's</span><br>
+        <span class="line2">Blog</span><br>
+      </h1>
+      <p class="hero__bio">Estudiante de Ciberseguridad en URJC. CTF player activo.</p>
+      <div class="hero__actions">
+        <a href="/about/" class="btn btn--accent">whoami</a>
+        <a href="/posts/" class="btn btn--ghost">ver todos los posts</a>
+      </div>
+      <div class="hero__stats">
+        <div>
+          <div class="hero__stat-num">1</div>
+          <div class="hero__stat-label">posts</div>
+        </div>
+        <div>
+          <div class="hero__stat-num">6</div>
+          <div class="hero__stat-label">retos</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__right">
+      
+      <a href="/posts/kernel-retspill/" class="hero__featured">
+        <div class="hero__featured-img">
+          
+          <img src="/assets/img/posts/retspill/retspill_post.png" alt="RetSpill: De CHF en Kernel a LPE" loading="lazy">
+          
+        </div>
+        <div class="hero__featured-body">
+          
+          <span class="hero__featured-tag tag-kernel">Kernel</span>
+          
+          <div class="hero__featured-title">RetSpill: De CHF en Kernel a LPE</div>
+          
+          <div class="hero__featured-excerpt">Cómo pasar de un Control Flow Hijack a LPE a través de datos controlados por el usuario en el Kernel Stack.</div>
+          
+          <div class="hero__featured-meta">
+            <span>02 Apr 2026</span>
+            <span class="hero__featured-read">leer →</span>
+          </div>
+        </div>
+      </a>
+      
+    </div>
+  </section>
+
+  <!-- Latest posts grid -->
+  <div class="section-head">
+    <h2>últimos <span>posts</span></h2>
+    <a href="/posts/">ver todos →</a>
+  </div>
+  <div class="post-grid">
+    
+    <a href="/posts/kernel-retspill/" class="post-card">
+      <div class="post-card__img">
+        
+        <img src="/assets/img/posts/retspill/retspill_post.png" alt="RetSpill: De CHF en Kernel a LPE" loading="lazy">
+        
+      </div>
+      <div class="post-card__body">
+        
+        <span class="post-card__tag tag-kernel">Kernel</span>
+        
+        <div class="post-card__title">RetSpill: De CHF en Kernel a LPE</div>
+        
+        <div class="post-card__excerpt">Cómo pasar de un Control Flow Hijack a LPE a través de datos controlados por el usuario en el Ker...</div>
+        
+        <div class="post-card__foot">
+          <span class="post-card__date">02 Apr 2026</span>
+          <span style="font-family:var(--font);font-size:11px;font-weight:600;color:var(--accent);">leer →</span>
+        </div>
+      </div>
+    </a>
+    
+  </div>
+
+  <!-- Recent challenges -->
+  <div class="section-head">
+    <h2>retos <span>recientes</span></h2>
+    <a href="/challenges/">ver todos →</a>
+  </div>
+  <div class="challenge-grid">
+    
+    
+      
+      
+      <article class="challenge-card">
+        <div class="challenge-card__top">
+          <div class="challenge-card__badges">
+            
+            <span class="platform-badge">Advanced Heap Exploitation & FSOP</span>
+            
+            <span class="folder-badge">HackOn 2026</span>
+          </div>
+          <span class="post-card__tag tag-pwn">pwn</span>
+        </div>
+
+        <div class="challenge-card__body">
+          
+          <a class="challenge-card__title" href="/challenges/crazy-notes/">Crazy Notes</a>
+          
+        </div>
+
+        <div class="challenge-card__foot">
+          <span class="diff diff-hard">hard</span>
+          
+          <a href="/challenges/crazy-notes/" class="challenge-card__link">ver writeup →</a>
+          
+        </div>
+      </article>
+    
+      
+      
+      <article class="challenge-card">
+        <div class="challenge-card__top">
+          <div class="challenge-card__badges">
+            
+            <span class="platform-badge">Stack Pivot & SROP</span>
+            
+            <span class="folder-badge">HackOn 2026</span>
+          </div>
+          <span class="post-card__tag tag-pwn">pwn</span>
+        </div>
+
+        <div class="challenge-card__body">
+          
+          <a class="challenge-card__title" href="/challenges/sessiond/">Sessiond</a>
+          
+        </div>
+
+        <div class="challenge-card__foot">
+          <span class="diff diff-medium">medium</span>
+          
+          <a href="/challenges/sessiond/" class="challenge-card__link">ver writeup →</a>
+          
+        </div>
+      </article>
+    
+      
+      
+      <article class="challenge-card">
+        <div class="challenge-card__top">
+          <div class="challenge-card__badges">
+            
+            <span class="platform-badge">Use After Free</span>
+            
+            <span class="folder-badge">HackOn 2026</span>
+          </div>
+          <span class="post-card__tag tag-pwn">pwn</span>
+        </div>
+
+        <div class="challenge-card__body">
+          
+          <a class="challenge-card__title" href="/challenges/infant-notes/">Infant Notes</a>
+          
+        </div>
+
+        <div class="challenge-card__foot">
+          <span class="diff diff-easy">easy</span>
+          
+          <a href="/challenges/infant-notes/" class="challenge-card__link">ver writeup →</a>
+          
+        </div>
+      </article>
+    
+      
+      
+      <article class="challenge-card">
+        <div class="challenge-card__top">
+          <div class="challenge-card__badges">
+            
+            <span class="platform-badge">Kernel CHF + RetSpill</span>
+            
+            <span class="folder-badge">Mis Retos</span>
+          </div>
+          <span class="post-card__tag tag-pwn">pwn</span>
+        </div>
+
+        <div class="challenge-card__body">
+          
+          <a class="challenge-card__title" href="/challenges/spillme/">SpillMe</a>
+          
+        </div>
+
+        <div class="challenge-card__foot">
+          <span class="diff diff-medium">medium</span>
+          
+          <a href="/challenges/spillme/" class="challenge-card__link">ver writeup →</a>
+          
+        </div>
+      </article>
+    
+      
+      
+      <article class="challenge-card">
+        <div class="challenge-card__top">
+          <div class="challenge-card__badges">
+            
+            <span class="platform-badge">GOT Overwrite</span>
+            
+            <span class="folder-badge">HackOn 2026</span>
+          </div>
+          <span class="post-card__tag tag-pwn">pwn</span>
+        </div>
+
+        <div class="challenge-card__body">
+          
+          <a class="challenge-card__title" href="/challenges/plin-plon-plin/">Plin Plon Plin</a>
+          
+        </div>
+
+        <div class="challenge-card__foot">
+          <span class="diff diff-easy">easy</span>
+          
+          <a href="/challenges/plin-plon-plin/" class="challenge-card__link">ver writeup →</a>
+          
+        </div>
+      </article>
+    
+      
+      
+      <article class="challenge-card">
+        <div class="challenge-card__top">
+          <div class="challenge-card__badges">
+            
+            <span class="platform-badge">Ret2Libc</span>
+            
+            <span class="folder-badge">HackOn 2026</span>
+          </div>
+          <span class="post-card__tag tag-pwn">pwn</span>
+        </div>
+
+        <div class="challenge-card__body">
+          
+          <a class="challenge-card__title" href="/challenges/plin-plin-plon/">Plin Plin Plon</a>
+          
+        </div>
+
+        <div class="challenge-card__foot">
+          <span class="diff diff-easy">easy</span>
+          
+          <a href="/challenges/plin-plin-plon/" class="challenge-card__link">ver writeup →</a>
+          
+        </div>
+      </article>
+    
+  </div>
+
+  <div style="height: 80px;"></div>
+</div>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__brand">
+        <span class="footer__brand-dot"></span>
+        Zereza's Blog
+      </div>
+      <div class="footer__copy">© 2026 Miguel Peñaranda</div>
+    </div>
+    <div class="footer__links">
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener">github</a>
+      <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener">linkedin</a>
+      <a href="mailto:mig.penaranda07@gmail.com">email</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
