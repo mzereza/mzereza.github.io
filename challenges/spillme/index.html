@@ -352,7 +352,7 @@ qemu-system-x86_64 <span class="se">\</span>
   <li><strong>VULN_EXEC</strong>: Comprueba que <strong>arg</strong> sea 0 <em>(Esto se hace para no tener control sobre los registros)</em>, y ejecuta como funcion <strong>fn_ptr</strong></li>
 </ol>
 
-<p><strong>¡Tenemos Control Flow Hijack (CHF)!</strong>, pero… <strong>¿como pasamos de esto a escalar privilegios?</strong></p>
+<p><strong>¡Tenemos Control Flow Hijack (CFH)!</strong>, pero… <strong>¿como pasamos de esto a escalar privilegios?</strong></p>
 
 <p>Podemos ejecutar la funcion que queramos, pero <strong>no tenemos control de los argumentos</strong> por lo que no podemos hacer <code class="language-plaintext highlighter-rouge">commit_creds(init_cred)</code> o algo similar.</p>
 

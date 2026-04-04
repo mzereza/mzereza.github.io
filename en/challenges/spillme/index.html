@@ -352,7 +352,7 @@ qemu-system-x86_64 <span class="se">\</span>
   <li><strong>VULN_EXEC</strong>: Checks that <strong>arg</strong> is 0 <em>(this is done to prevent register control)</em>, and executes <strong>fn_ptr</strong> as a function</li>
 </ol>
 
-<p><strong>We have Control Flow Hijack (CHF)!</strong> But… <strong>how do we go from this to privilege escalation?</strong></p>
+<p><strong>We have Control Flow Hijack (CFH)!</strong> But… <strong>how do we go from this to privilege escalation?</strong></p>
 
 <p>We can execute whatever function we want, but <strong>we don’t have control over the arguments</strong>, so we can’t do <code class="language-plaintext highlighter-rouge">commit_creds(init_cred)</code> or something similar.</p>
 

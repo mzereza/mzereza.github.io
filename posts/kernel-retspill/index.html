@@ -11,16 +11,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RetSpill: De CHF en Kernel a LPE — Zereza's Blog</title>
+  <title>RetSpill: De CFH en Kernel a LPE — Zereza's Blog</title>
   <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230E1120'/><circle cx='16' cy='16' r='6' fill='none' stroke='%237EC8E3' stroke-width='2'/><circle cx='16' cy='16' r='2' fill='%237EC8E3'/></svg>">
   <!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>RetSpill: De CHF en Kernel a LPE | Zereza’s Blog</title>
+<title>RetSpill: De CFH en Kernel a LPE | Zereza’s Blog</title>
 <meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="RetSpill: De CHF en Kernel a LPE" />
+<meta property="og:title" content="RetSpill: De CFH en Kernel a LPE" />
 <meta name="author" content="Miguel Peñaranda" />
 <meta property="og:locale" content="es" />
 <meta name="description" content="Cómo pasar de un Control Flow Hijack a LPE a través de datos controlados por el usuario en el Kernel Stack." />
@@ -33,9 +33,9 @@
 <meta property="article:published_time" content="2026-04-02T00:00:00+02:00" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta property="twitter:image" content="http://0.0.0.0:4000/assets/img/posts/retspill/retspill_post.png" />
-<meta property="twitter:title" content="RetSpill: De CHF en Kernel a LPE" />
+<meta property="twitter:title" content="RetSpill: De CFH en Kernel a LPE" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Miguel Peñaranda"},"dateModified":"2026-04-02T00:00:00+02:00","datePublished":"2026-04-02T00:00:00+02:00","description":"Cómo pasar de un Control Flow Hijack a LPE a través de datos controlados por el usuario en el Kernel Stack.","headline":"RetSpill: De CHF en Kernel a LPE","image":"http://0.0.0.0:4000/assets/img/posts/retspill/retspill_post.png","mainEntityOfPage":{"@type":"WebPage","@id":"http://0.0.0.0:4000/posts/kernel-retspill/"},"url":"http://0.0.0.0:4000/posts/kernel-retspill/"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Miguel Peñaranda"},"dateModified":"2026-04-02T00:00:00+02:00","datePublished":"2026-04-02T00:00:00+02:00","description":"Cómo pasar de un Control Flow Hijack a LPE a través de datos controlados por el usuario en el Kernel Stack.","headline":"RetSpill: De CFH en Kernel a LPE","image":"http://0.0.0.0:4000/assets/img/posts/retspill/retspill_post.png","mainEntityOfPage":{"@type":"WebPage","@id":"http://0.0.0.0:4000/posts/kernel-retspill/"},"url":"http://0.0.0.0:4000/posts/kernel-retspill/"}</script>
 <!-- End Jekyll SEO tag -->
 
 </head>
@@ -85,7 +85,7 @@
         <span class="post-tag tag-kernel">Kernel</span>
         
       </div>
-      <h1>RetSpill: De CHF en Kernel a LPE</h1>
+      <h1>RetSpill: De CFH en Kernel a LPE</h1>
       <div class="post-header-meta">
         
         <span>02 de April de 2026</span>
@@ -96,7 +96,7 @@
 
     
     <div class="post-cover">
-      <img src="/assets/img/posts/retspill/retspill_post.png" alt="RetSpill: De CHF en Kernel a LPE">
+      <img src="/assets/img/posts/retspill/retspill_post.png" alt="RetSpill: De CFH en Kernel a LPE">
     </div>
     
 
@@ -113,7 +113,7 @@
 <p>En este post explico la intuición, cómo lo entendí resolviendo un reto, y cómo se traduce en una LPE.</p>
 
 <h2 id="introducción">Introducción</h2>
-<p>RetSpill es una técnica que aparece en el contexto de explotación de kernel cuando tenemos un <strong>Control Flow Hijack (CHF)</strong> pero no suficiente control para hacer ROP directamente.</p>
+<p>RetSpill es una técnica que aparece en el contexto de explotación de kernel cuando tenemos un <strong>Control Flow Hijack (CFH)</strong> pero no suficiente control para hacer ROP directamente.</p>
 
 <p>Aprendí esta técnica resolviendo un reto de <a href="https://pwn.college">PwnCollege</a> dónde ya había conseguido un <strong>CFH</strong>, pero no sabia <strong>qué hacer con ese control limitado</strong>.</p>
 
@@ -124,12 +124,12 @@
   <li>Cómo se aplica en un escenario real</li>
 </ul>
 
-<h2 id="el-problema-chf-no-siempre-es-suficiente">El problema: CHF no siempre es suficiente</h2>
+<h2 id="el-problema-cfh-no-siempre-es-suficiente">El problema: CFH no siempre es suficiente</h2>
 <p>Antes de hablar de RetSpill, hay que entender la limitación clave.</p>
 
 <p>En muchos retos de kernel:</p>
 <ul>
-  <li>Puedes redirigir ejecución <strong>(CHF)</strong></li>
+  <li>Puedes redirigir ejecución <strong>(CFH)</strong></li>
   <li>Pero <strong>no controlas completamente los registros o el stack</strong></li>
   <li>O <strong>no encuentras un gadget para pivotar</strong></li>
 </ul>
@@ -245,13 +245,13 @@
 <p>RetSpill no es un ataque por sí mismo, sino una técnica que <strong>parte de ciertas primitivas previas</strong>. En particular, normalmente necesitas:</p>
 
 <ul>
-  <li>Algún tipo de <strong>Control Flow Hijack (CHF)</strong></li>
+  <li>Algún tipo de <strong>Control Flow Hijack (CFH)</strong></li>
   <li>Un <strong>leak de KASLR</strong>, en caso de que esta mitigación esté activa</li>
 </ul>
 
 <p>Es decir, RetSpill no te da control inicial, sino que sirve para <strong>amplificar un control ya existente pero limitado</strong>.</p>
 
-<p>Además, en muchos escenarios reales hay un trade-off importante: <strong>el propio bug que te da el CHF puede restringir qué registros controlas.</strong></p>
+<p>Además, en muchos escenarios reales hay un trade-off importante: <strong>el propio bug que te da el CFH puede restringir qué registros controlas.</strong></p>
 
 <p>Por ejemplo, puede que consigas redirigir la ejecución, pero:</p>
 <ul>

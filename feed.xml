@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" /><updated>2026-04-04T00:31:44+02:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Zereza’s Blog</title><subtitle>Blog de ciberseguridad. Writeups, notas técnicas e investigación.</subtitle><author><name>Miguel Peñaranda</name><email>mig.penaranda07@gmail.com</email></author><entry xml:lang="es"><title type="html">RetSpill: De CHF en Kernel a LPE</title><link href="http://0.0.0.0:4000/posts/kernel-retspill/" rel="alternate" type="text/html" title="RetSpill: De CHF en Kernel a LPE" /><published>2026-04-02T00:00:00+02:00</published><updated>2026-04-02T00:00:00+02:00</updated><id>http://0.0.0.0:4000/posts/kernel-retspill</id><content type="html" xml:base="http://0.0.0.0:4000/posts/kernel-retspill/"><![CDATA[<h2 id="disclaimer">Disclaimer</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" /><updated>2026-04-04T02:55:33+02:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Zereza’s Blog</title><subtitle>Blog de ciberseguridad. Writeups, notas técnicas e investigación.</subtitle><author><name>Miguel Peñaranda</name><email>mig.penaranda07@gmail.com</email></author><entry xml:lang="es"><title type="html">RetSpill: De CFH en Kernel a LPE</title><link href="http://0.0.0.0:4000/posts/kernel-retspill/" rel="alternate" type="text/html" title="RetSpill: De CFH en Kernel a LPE" /><published>2026-04-02T00:00:00+02:00</published><updated>2026-04-02T00:00:00+02:00</updated><id>http://0.0.0.0:4000/posts/kernel-retspill</id><content type="html" xml:base="http://0.0.0.0:4000/posts/kernel-retspill/"><![CDATA[<h2 id="disclaimer">Disclaimer</h2>
 <p>Esta técnica no es de mi autoría; puedes consultar la investigación original aquí:<br />
 <a href="https://adamdoupe.com/publications/retspill-ccs2023.pdf">https://adamdoupe.com/publications/retspill-ccs2023.pdf</a></p>
 
@@ -10,7 +10,7 @@
 <p>En este post explico la intuición, cómo lo entendí resolviendo un reto, y cómo se traduce en una LPE.</p>
 
 <h2 id="introducción">Introducción</h2>
-<p>RetSpill es una técnica que aparece en el contexto de explotación de kernel cuando tenemos un <strong>Control Flow Hijack (CHF)</strong> pero no suficiente control para hacer ROP directamente.</p>
+<p>RetSpill es una técnica que aparece en el contexto de explotación de kernel cuando tenemos un <strong>Control Flow Hijack (CFH)</strong> pero no suficiente control para hacer ROP directamente.</p>
 
 <p>Aprendí esta técnica resolviendo un reto de <a href="https://pwn.college">PwnCollege</a> dónde ya había conseguido un <strong>CFH</strong>, pero no sabia <strong>qué hacer con ese control limitado</strong>.</p>
 
@@ -21,12 +21,12 @@
   <li>Cómo se aplica en un escenario real</li>
 </ul>
 
-<h2 id="el-problema-chf-no-siempre-es-suficiente">El problema: CHF no siempre es suficiente</h2>
+<h2 id="el-problema-cfh-no-siempre-es-suficiente">El problema: CFH no siempre es suficiente</h2>
 <p>Antes de hablar de RetSpill, hay que entender la limitación clave.</p>
 
 <p>En muchos retos de kernel:</p>
 <ul>
-  <li>Puedes redirigir ejecución <strong>(CHF)</strong></li>
+  <li>Puedes redirigir ejecución <strong>(CFH)</strong></li>
   <li>Pero <strong>no controlas completamente los registros o el stack</strong></li>
   <li>O <strong>no encuentras un gadget para pivotar</strong></li>
 </ul>
@@ -142,13 +142,13 @@
 <p>RetSpill no es un ataque por sí mismo, sino una técnica que <strong>parte de ciertas primitivas previas</strong>. En particular, normalmente necesitas:</p>
 
 <ul>
-  <li>Algún tipo de <strong>Control Flow Hijack (CHF)</strong></li>
+  <li>Algún tipo de <strong>Control Flow Hijack (CFH)</strong></li>
   <li>Un <strong>leak de KASLR</strong>, en caso de que esta mitigación esté activa</li>
 </ul>
 
 <p>Es decir, RetSpill no te da control inicial, sino que sirve para <strong>amplificar un control ya existente pero limitado</strong>.</p>
 
-<p>Además, en muchos escenarios reales hay un trade-off importante: <strong>el propio bug que te da el CHF puede restringir qué registros controlas.</strong></p>
+<p>Además, en muchos escenarios reales hay un trade-off importante: <strong>el propio bug que te da el CFH puede restringir qué registros controlas.</strong></p>
 
 <p>Por ejemplo, puede que consigas redirigir la ejecución, pero:</p>
 <ul>
