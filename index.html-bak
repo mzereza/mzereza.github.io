@@ -70,7 +70,7 @@
         <span>Zereza's</span><br>
         <span class="line2">Blog</span><br>
       </h1>
-      <p class="hero__bio">Estudiante de Ciberseguridad en URJC. CTF player activo.</p>
+      <p class="hero__bio">Junior Antibot Engineer en NielsenIQ. Estudiante de Ciberseguridad en URJC. CTF player activo.</p>
       <div class="hero__actions">
         <a href="/about/" class="btn btn--accent">whoami</a>
         <a href="/posts/" class="btn btn--ghost">ver todos los posts</a>
