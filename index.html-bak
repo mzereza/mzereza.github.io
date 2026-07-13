@@ -11,26 +11,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HackOn — Zereza's Blog</title>
+  <title>Zereza's Blog · security research · binary exploitation · ctf</title>
   <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000000'/><rect x='1' y='1' width='30' height='30' fill='none' stroke='%2300FF00' stroke-width='2'/><text x='5' y='23' font-family='monospace' font-size='16' fill='%2300FF00'>&gt;_</text></svg>">
   <!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>HackOn | Zereza’s Blog</title>
+<title>Zereza’s Blog | security research · binary exploitation · ctf</title>
 <meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="HackOn" />
+<meta property="og:title" content="Zereza’s Blog" />
 <meta name="author" content="Miguel Peñaranda" />
 <meta property="og:locale" content="es" />
 <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación." />
 <meta property="og:description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación." />
-<link rel="canonical" href="http://0.0.0.0:4000/challenges/hackon-2026/" />
-<meta property="og:url" content="http://0.0.0.0:4000/challenges/hackon-2026/" />
+<link rel="canonical" href="http://0.0.0.0:4000/index.html-bak" />
+<meta property="og:url" content="http://0.0.0.0:4000/index.html-bak" />
 <meta property="og:site_name" content="Zereza’s Blog" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="HackOn" />
+<meta property="twitter:title" content="Zereza’s Blog" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Miguel Peñaranda"},"description":"Blog de ciberseguridad. Writeups, notas técnicas e investigación.","headline":"HackOn","url":"http://0.0.0.0:4000/challenges/hackon-2026/"}</script>
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Miguel Peñaranda"},"description":"Blog de ciberseguridad. Writeups, notas técnicas e investigación.","headline":"Zereza’s Blog","url":"http://0.0.0.0:4000/index.html-bak"}</script>
 <!-- End Jekyll SEO tag -->
 
 </head>
@@ -46,12 +46,12 @@
       <li><a href="/" >inicio</a></li>
       <li><a href="/about/" >whoami</a></li>
       <li><a href="/posts/" >posts</a></li>
-      <li><a href="/challenges/" class="active">retos</a></li>
+      <li><a href="/challenges/" >retos</a></li>
     </ul>
     <div class="nav__tools">
       <div class="lang-switch" aria-label="Language switcher">
-        <a href="/challenges/hackon-2026/" class="active">ES</a>
-        <a href="/en/challenges/hackon-2026/" >EN</a>
+        <a href="/" class="active">ES</a>
+        <a href="/en/" >EN</a>
       </div>
       <a href="https://github.com/mzereza" target="_blank" rel="noopener" class="nav__cta">github ↗</a>
     </div>
@@ -59,68 +59,122 @@
   </div>
 </nav>
 
-<main>
-
-
+<main><div class="page">
+  
+  
   
 
-  
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="page">
-  <article class="post-wrap">
-    <a href="/challenges/" class="post-back">← volver a carpetas</a>
-
-    <header class="folder-page-header">
-      <p class="folder-page-header__eyebrow">carpeta</p>
-      <h1>HackOn 2026</h1>
-      
-      <p class="folder-page-header__desc">Retos y ejercicios del CTF HackOn organizado por la URJC.</p>
-      
-      <p class="folder-page-header__meta">5 retos</p>
-    </header>
-
-    <div class="challenge-search">
-      <label class="challenge-search__label" for="challenge-page-search-input">buscar reto en HackOn 2026</label>
-      <div class="challenge-search__input-wrap">
-        <input
-          id="challenge-page-search-input"
-          class="challenge-search__input"
-          type="search"
-          placeholder="nombre, categoría, dificultad o keywords"
-          autocomplete="off"
-        >
-        <span class="challenge-search__hint">filtra sólo los retos de esta carpeta</span>
+  <section class="hero">
+    <div class="hero__left">
+      <h1 class="hero__title">
+        <span>Zereza's</span><br>
+        <span class="line2">Blog</span><br>
+      </h1>
+      <p class="hero__bio">Estudiante de Ciberseguridad en URJC. CTF player activo.</p>
+      <div class="hero__actions">
+        <a href="/about/" class="btn btn--accent">whoami</a>
+        <a href="/posts/" class="btn btn--ghost">ver todos los posts</a>
       </div>
-      <p class="challenge-search__status">
-        <span id="challenge-page-status-label">retos visibles</span>: <span id="challenge-page-visible">5</span>
-      </p>
+      <div class="hero__stats">
+        <div>
+          <div class="hero__stat-num">2</div>
+          <div class="hero__stat-label">posts</div>
+        </div>
+        <div>
+          <div class="hero__stat-num">6</div>
+          <div class="hero__stat-label">retos</div>
+        </div>
+      </div>
     </div>
 
-    <div class="challenge-grid" id="challenge-page-results">
+    <div class="hero__right">
       
-      <article
-        class="challenge-row challenge-card"
-        data-search="crazy notes advanced heap exploitation & fsop pwn hard hackon 2026 uaf use after free unsorted bin heap tcache poisoning fsop safe linking writeup read ver"
-      >
+      <a href="/posts/retspill-2/" class="hero__featured">
+        <div class="hero__featured-img">
+          
+          <img src="/assets/img/posts/retspillV2/retspillV2_post.jpeg" alt="Haciendo RetSpill Mas Potente" loading="lazy">
+          
+        </div>
+        <div class="hero__featured-body">
+          
+          <span class="hero__featured-tag tag-kernel">Kernel</span>
+          
+          <div class="hero__featured-title">Haciendo RetSpill Mas Potente</div>
+          
+          <div class="hero__featured-excerpt">Pasando de ejecucion de código limitada a una primitiva mas poderosa</div>
+          
+          <div class="hero__featured-meta">
+            <span>12 Jul 2026</span>
+            <span class="hero__featured-read">leer →</span>
+          </div>
+        </div>
+      </a>
+      
+    </div>
+  </section>
+
+  <!-- Latest posts grid -->
+  <div class="section-head">
+    <h2>últimos <span>posts</span></h2>
+    <a href="/posts/">ver todos →</a>
+  </div>
+  <div class="post-grid">
+    
+    <a href="/posts/retspill-2/" class="post-card">
+      <div class="post-card__img">
+        
+        <img src="/assets/img/posts/retspillV2/retspillV2_post.jpeg" alt="Haciendo RetSpill Mas Potente" loading="lazy">
+        
+      </div>
+      <div class="post-card__body">
+        
+        <span class="post-card__tag tag-kernel">Kernel</span>
+        
+        <div class="post-card__title">Haciendo RetSpill Mas Potente</div>
+        
+        <div class="post-card__excerpt">Pasando de ejecucion de código limitada a una primitiva mas poderosa</div>
+        
+        <div class="post-card__foot">
+          <span class="post-card__date">12 Jul 2026</span>
+          <span style="font-family:var(--font);font-size:11px;font-weight:600;color:var(--accent);">leer →</span>
+        </div>
+      </div>
+    </a>
+    
+    <a href="/posts/kernel-retspill/" class="post-card">
+      <div class="post-card__img">
+        
+        <img src="/assets/img/posts/retspill/retspill_post.jpeg" alt="RetSpill: De CFH en Kernel a LPE" loading="lazy">
+        
+      </div>
+      <div class="post-card__body">
+        
+        <span class="post-card__tag tag-kernel">Kernel</span>
+        
+        <div class="post-card__title">RetSpill: De CFH en Kernel a LPE</div>
+        
+        <div class="post-card__excerpt">Cómo pasar de un Control Flow Hijack a LPE a través de datos controlados por el usuario en el Ker...</div>
+        
+        <div class="post-card__foot">
+          <span class="post-card__date">02 Apr 2026</span>
+          <span style="font-family:var(--font);font-size:11px;font-weight:600;color:var(--accent);">leer →</span>
+        </div>
+      </div>
+    </a>
+    
+  </div>
+
+  <!-- Recent challenges -->
+  <div class="section-head">
+    <h2>retos <span>recientes</span></h2>
+    <a href="/challenges/">ver todos →</a>
+  </div>
+  <div class="challenge-grid">
+    
+    
+      
+      
+      <article class="challenge-card">
         <div class="challenge-card__top">
           <div class="challenge-card__badges">
             
@@ -144,11 +198,10 @@
           
         </div>
       </article>
+    
       
-      <article
-        class="challenge-row challenge-card"
-        data-search="sessiond stack pivot & srop pwn medium hackon 2026 stack pivot srop sigreturn buffer overflow pwntools writeup read ver"
-      >
+      
+      <article class="challenge-card">
         <div class="challenge-card__top">
           <div class="challenge-card__badges">
             
@@ -172,11 +225,10 @@
           
         </div>
       </article>
+    
       
-      <article
-        class="challenge-row challenge-card"
-        data-search="infant notes use after free pwn easy hackon 2026 uaf use after free tcache heap writeup read ver"
-      >
+      
+      <article class="challenge-card">
         <div class="challenge-card__top">
           <div class="challenge-card__badges">
             
@@ -200,11 +252,37 @@
           
         </div>
       </article>
+    
       
-      <article
-        class="challenge-row challenge-card"
-        data-search="plin plon plin got overwrite pwn easy hackon 2026 got overwrite format string pwntools writeup read ver"
-      >
+      
+      <article class="challenge-card">
+        <div class="challenge-card__top">
+          <div class="challenge-card__badges">
+            
+            <span class="platform-badge">Kernel CFH + RetSpill</span>
+            
+            <span class="folder-badge">Mis Retos</span>
+          </div>
+          <span class="post-card__tag tag-pwn">pwn</span>
+        </div>
+
+        <div class="challenge-card__body">
+          
+          <a class="challenge-card__title" href="/challenges/spillme/">SpillMe</a>
+          
+        </div>
+
+        <div class="challenge-card__foot">
+          <span class="diff diff-medium">medium</span>
+          
+          <a href="/challenges/spillme/" class="challenge-card__link">ver writeup →</a>
+          
+        </div>
+      </article>
+    
+      
+      
+      <article class="challenge-card">
         <div class="challenge-card__top">
           <div class="challenge-card__badges">
             
@@ -228,11 +306,10 @@
           
         </div>
       </article>
+    
       
-      <article
-        class="challenge-row challenge-card"
-        data-search="plin plin plon ret2libc pwn easy hackon 2026 ret2libc libc buffer overflow rop pwntools glibc writeup read ver"
-      >
+      
+      <article class="challenge-card">
         <div class="challenge-card__top">
           <div class="challenge-card__badges">
             
@@ -256,78 +333,11 @@
           
         </div>
       </article>
-      
+    
+  </div>
 
-    </div>
-    <div id="challenge-page-empty" class="challenge-search-empty is-hidden">
-      no hay retos en esta carpeta que coincidan con esa búsqueda
-    </div>
-  </article>
+  <div style="height: 80px;"></div>
 </div>
-
-<script>
-  (function () {
-    var input = document.getElementById('challenge-page-search-input');
-    var rows = Array.prototype.slice.call(document.querySelectorAll('.challenge-row'));
-    var resultsGrid = document.getElementById('challenge-page-results');
-    var visibleCount = document.getElementById('challenge-page-visible');
-    var statusLabel = document.getElementById('challenge-page-status-label');
-    var emptyState = document.getElementById('challenge-page-empty');
-
-    if (!input || !rows.length || !resultsGrid || !visibleCount || !statusLabel || !emptyState) {
-      return;
-    }
-
-    visibleCount.textContent = String(rows.length);
-
-    function normalize(value) {
-      return (value || '')
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim();
-    }
-
-    function filterChallenges() {
-      var query = normalize(input.value);
-      var matches = 0;
-
-      if (!query) {
-        rows.forEach(function (row) {
-          row.hidden = false;
-        });
-        resultsGrid.classList.remove('is-hidden');
-        statusLabel.textContent = "retos visibles";
-        visibleCount.textContent = String(rows.length);
-        emptyState.classList.add('is-hidden');
-        return;
-      }
-
-      statusLabel.textContent = "retos encontrados";
-
-      rows.forEach(function (row) {
-        var haystack = normalize(row.getAttribute('data-search'));
-        var isVisible = haystack.indexOf(query) !== -1;
-
-        row.classList.toggle('is-hidden', !isVisible);
-        if (isVisible) {
-          matches += 1;
-        }
-      });
-
-      visibleCount.textContent = String(matches);
-      if (matches === 0) {
-        resultsGrid.classList.add('is-hidden');
-        emptyState.classList.remove('is-hidden');
-      } else {
-        resultsGrid.classList.remove('is-hidden');
-        emptyState.classList.add('is-hidden');
-      }
-    }
-
-    input.addEventListener('input', filterChallenges);
-  })();
-</script>
 </main>
 
 <footer class="footer">

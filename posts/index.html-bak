@@ -59,40 +59,58 @@
   </div>
 </nav>
 
-<main><div class="page page--narrow">
-
-  <h2 class="plain-head plain-head--top">---[ todos los posts ]---</h2>
-
+<main><div class="page">
   
-  <div class="entry">
-    
-    <a href="/posts/retspill-2/"><img class="entry__thumb" src="/assets/img/posts/retspillV2/retspillV2_post.jpeg" alt="Haciendo RetSpill Mas Potente" loading="lazy"></a>
-    
-    <h3 class="entry__title"><a href="/posts/retspill-2/">Haciendo RetSpill Mas Potente</a></h3>
-    <p class="entry__meta">2026-07-12 :: [Kernel]</p>
-    
-    <p class="entry__excerpt">Pasando de ejecucion de código limitada a una primitiva mas poderosa</p>
-    
-    <p class="entry__more"><a href="/posts/retspill-2/">leer más »</a></p>
+  <div class="section-head" style="padding-top: 48px;">
+    <h2>todos los <span>posts</span></h2>
   </div>
-  <hr class="entry-sep">
-  
-  <div class="entry">
+  <div class="post-grid">
     
-    <a href="/posts/kernel-retspill/"><img class="entry__thumb" src="/assets/img/posts/retspill/retspill_post.jpeg" alt="RetSpill: De CFH en Kernel a LPE" loading="lazy"></a>
+    <a href="/posts/retspill-2/" class="post-card">
+      <div class="post-card__img">
+        
+        <img src="/assets/img/posts/retspillV2/retspillV2_post.jpeg" alt="Haciendo RetSpill Mas Potente" loading="lazy">
+        
+      </div>
+      <div class="post-card__body">
+        
+        <span class="post-card__tag tag-kernel">Kernel</span>
+        
+        <div class="post-card__title">Haciendo RetSpill Mas Potente</div>
+        
+        <div class="post-card__excerpt">Pasando de ejecucion de código limitada a una primitiva mas poderosa</div>
+        
+        <div class="post-card__foot">
+          <span class="post-card__date">12 Jul 2026</span>
+          <span style="font-family:var(--font);font-size:11px;font-weight:600;color:var(--accent);">leer →</span>
+        </div>
+      </div>
+    </a>
     
-    <h3 class="entry__title"><a href="/posts/kernel-retspill/">RetSpill: De CFH en Kernel a LPE</a></h3>
-    <p class="entry__meta">2026-04-02 :: [Kernel]</p>
+    <a href="/posts/kernel-retspill/" class="post-card">
+      <div class="post-card__img">
+        
+        <img src="/assets/img/posts/retspill/retspill_post.jpeg" alt="RetSpill: De CFH en Kernel a LPE" loading="lazy">
+        
+      </div>
+      <div class="post-card__body">
+        
+        <span class="post-card__tag tag-kernel">Kernel</span>
+        
+        <div class="post-card__title">RetSpill: De CFH en Kernel a LPE</div>
+        
+        <div class="post-card__excerpt">Cómo pasar de un Control Flow Hijack a LPE a través de datos controlados por el usuario en el Ker...</div>
+        
+        <div class="post-card__foot">
+          <span class="post-card__date">02 Apr 2026</span>
+          <span style="font-family:var(--font);font-size:11px;font-weight:600;color:var(--accent);">leer →</span>
+        </div>
+      </div>
+    </a>
     
-    <p class="entry__excerpt">Cómo pasar de un Control Flow Hijack a LPE a través de datos controlados por el usuario en el Kernel Stack.</p>
-    
-    <p class="entry__more"><a href="/posts/kernel-retspill/">leer más »</a></p>
   </div>
-  <hr class="entry-sep">
   
-
-  
-
+  <div style="height:80px;"></div>
 </div>
 </main>
 

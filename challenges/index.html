@@ -13,10 +13,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>retos — Zereza's Blog</title>
   <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/assets/css/main.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230E1120'/><circle cx='16' cy='16' r='6' fill='none' stroke='%237EC8E3' stroke-width='2'/><circle cx='16' cy='16' r='2' fill='%237EC8E3'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000000'/><rect x='1' y='1' width='30' height='30' fill='none' stroke='%2300FF00' stroke-width='2'/><text x='5' y='23' font-family='monospace' font-size='16' fill='%2300FF00'>&gt;_</text></svg>">
   <!-- Begin Jekyll SEO tag v2.8.0 -->
 <title>retos | Zereza’s Blog</title>
 <meta name="generator" content="Jekyll v4.4.1" />
@@ -41,8 +39,8 @@
 <nav class="nav">
   <div class="nav__inner">
     <a href="/" class="nav__logo">
-      <span class="nav__logo-dot"></span>
-      Zereza's Blog
+      <span class="nav__logo-prompt">~$</span>
+      Zereza's Blog<span class="nav__logo-cursor">_</span>
     </a>
     <ul class="nav__links" id="nav-links">
       <li><a href="/" >inicio</a></li>
@@ -63,319 +61,162 @@
 
 <main><div class="page">
   
-  <div class="section-head" style="padding-top:48px;">
-    <h2>retos <span>resueltos</span></h2>
-  </div>
 
-  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;">
-    
-    
-    
-    
-    <div style="background:var(--bg-card);border:1px solid var(--border-card);border-radius:12px;padding:14px 20px;min-width:100px;text-align:center;">
-      <div style="font-family:var(--font);font-size:24px;font-weight:700;color:var(--accent);">6</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">total</div>
-    </div>
-    
-    <div style="background:var(--bg-card);border:1px solid var(--border-card);border-radius:12px;padding:14px 20px;min-width:100px;text-align:center;">
-      <div style="font-family:var(--font);font-size:24px;font-weight:700;color:var(--peach);">6</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">pwn</div>
-    </div>
-    
-    
-    
-  </div>
+  <h2 class="plain-head plain-head--top">---[ retos ]---</h2>
 
-  <div class="challenge-search">
-    <label class="challenge-search__label" for="challenge-folder-search-input">buscar reto</label>
-    <div class="challenge-search__input-wrap">
-      <input
-        id="challenge-folder-search-input"
-        class="challenge-search__input"
-        type="search"
-        placeholder="nombre, plataforma, categoría, dificultad o keywords"
-        autocomplete="off"
-      >
-      <span class="challenge-search__hint">busca retos dentro de todas las carpetas</span>
-    </div>
-    <p class="challenge-search__status">
-      <span id="challenge-folder-status-label">carpetas visibles</span>: <span id="challenge-folder-visible">0</span>
-    </p>
-  </div>
+  
+  
+  
+  <p class="plain-bio">total: 6 / pwn: 6</p>
 
-  <div class="folder-grid" id="folder-grid">
+  <p class="plain-search">
+    buscar: <input
+      id="challenge-folder-search-input"
+      class="plain-search__input"
+      type="search"
+      autocomplete="off"
+    >
+    <span class="plain-search__status"><span id="challenge-folder-status-label">carpetas visibles</span>: <span id="challenge-folder-visible">0</span></span>
+  </p>
+
+  <div id="folder-grid">
     
     
       
-      <a
-        class="folder-card"
-        href="/challenges/htb/"
-        data-search="htb retos y laboratorios de hack the box. "
-      >
+      
+      <div class="entry folder-card">
         
-        <div class="folder-card__media">
-          <img src="/assets/img/challenges-folders/logo-htb.svg" alt="HTB">
-        </div>
+        <a href="/challenges/htb/"><img class="entry__thumb entry__thumb--small" src="/assets/img/challenges-folders/logo-htb.svg" alt="HTB" loading="lazy"></a>
         
-        <div class="folder-card__body">
-          <p class="folder-card__eyebrow">carpeta</p>
-          <h3 class="folder-card__title">HTB</h3>
-          <p class="folder-card__desc">Retos y laboratorios de Hack The Box.</p>
-          <p class="folder-card__meta">0 retos</p>
-        </div>
-        <span class="folder-card__arrow">abrir →</span>
-      </a>
+        <h3 class="entry__title"><a href="/challenges/htb/">/HTB/</a></h3>
+        <p class="entry__meta">0 retos</p>
+        <p class="entry__excerpt">Retos y laboratorios de Hack The Box.</p>
+      </div>
+      <hr class="entry-sep">
     
       
-      <a
-        class="folder-card"
-        href="/challenges/hackon-2026/"
-        data-search="hackon 2026 retos y ejercicios del ctf hackon organizado por la urjc. plin plin plon ret2libc pwn easy ret2libc libc buffer overflow rop pwntools glibc plin plon plin got overwrite pwn easy got overwrite format string pwntools infant notes use after free pwn easy uaf use after free tcache heap sessiond stack pivot & srop pwn medium stack pivot srop sigreturn buffer overflow pwntools crazy notes advanced heap exploitation & fsop pwn hard uaf use after free unsorted bin heap tcache poisoning fsop safe linking "
-      >
+      
+      <div class="entry folder-card">
         
-        <div class="folder-card__media">
-          <img src="/assets/img/challenges-folders/logo-hackon.png" alt="HackOn 2026">
-        </div>
+        <a href="/challenges/hackon-2026/"><img class="entry__thumb entry__thumb--small" src="/assets/img/challenges-folders/logo-hackon.png" alt="HackOn 2026" loading="lazy"></a>
         
-        <div class="folder-card__body">
-          <p class="folder-card__eyebrow">carpeta</p>
-          <h3 class="folder-card__title">HackOn 2026</h3>
-          <p class="folder-card__desc">Retos y ejercicios del CTF HackOn organizado por la URJC.</p>
-          <p class="folder-card__meta">5 retos</p>
-        </div>
-        <span class="folder-card__arrow">abrir →</span>
-      </a>
+        <h3 class="entry__title"><a href="/challenges/hackon-2026/">/HackOn 2026/</a></h3>
+        <p class="entry__meta">5 retos</p>
+        <p class="entry__excerpt">Retos y ejercicios del CTF HackOn organizado por la URJC.</p>
+      </div>
+      <hr class="entry-sep">
     
       
-      <a
-        class="folder-card"
-        href="/challenges/mis-retos/"
-        data-search="mis retos retos creados por mi. spillme kernel cfh + retspill pwn medium kernel retspill kpti smap smep qemu module "
-      >
+      
+      <div class="entry folder-card">
         
-        <div class="folder-card__media">
-          <img src="/assets/img/challenges-folders/logo-mis-retos.png" alt="Mis Retos">
-        </div>
+        <a href="/challenges/mis-retos/"><img class="entry__thumb entry__thumb--small" src="/assets/img/challenges-folders/logo-mis-retos.png" alt="Mis Retos" loading="lazy"></a>
         
-        <div class="folder-card__body">
-          <p class="folder-card__eyebrow">carpeta</p>
-          <h3 class="folder-card__title">Mis Retos</h3>
-          <p class="folder-card__desc">Retos creados por mi.</p>
-          <p class="folder-card__meta">1 retos</p>
-        </div>
-        <span class="folder-card__arrow">abrir →</span>
-      </a>
+        <h3 class="entry__title"><a href="/challenges/mis-retos/">/Mis Retos/</a></h3>
+        <p class="entry__meta">1 retos</p>
+        <p class="entry__excerpt">Retos creados por mi.</p>
+      </div>
+      <hr class="entry-sep">
     
       
-      <a
-        class="folder-card"
-        href="/challenges/otros/"
-        data-search="otros cualquier plataforma o colección que no encaje en las carpetas principales. "
-      >
+      
+      <div class="entry folder-card">
         
-        <div class="folder-card__icon">/</div>
-        
-        <div class="folder-card__body">
-          <p class="folder-card__eyebrow">carpeta</p>
-          <h3 class="folder-card__title">Otros</h3>
-          <p class="folder-card__desc">Cualquier plataforma o colección que no encaje en las carpetas principales.</p>
-          <p class="folder-card__meta">0 retos</p>
-        </div>
-        <span class="folder-card__arrow">abrir →</span>
-      </a>
+        <h3 class="entry__title"><a href="/challenges/otros/">/Otros/</a></h3>
+        <p class="entry__meta">0 retos</p>
+        <p class="entry__excerpt">Cualquier plataforma o colección que no encaje en las carpetas principales.</p>
+      </div>
+      <hr class="entry-sep">
     
   </div>
 
-  <div class="challenge-grid is-hidden" id="challenge-search-results">
+  <ul class="plain-list is-hidden" id="challenge-search-results">
     
     
       
       
-      <article
-        class="challenge-search-result challenge-card"
+      <li
+        class="challenge-search-result"
         data-search="crazy notes advanced heap exploitation & fsop pwn hard hackon 2026 uaf use after free unsorted bin heap tcache poisoning fsop safe linking writeup ver"
       >
-        <div class="challenge-card__top">
-          <div class="challenge-card__badges">
-            
-            <span class="platform-badge">Advanced Heap Exploitation & FSOP</span>
-            
-            <span class="folder-badge">HackOn 2026</span>
-          </div>
-          <span class="post-card__tag tag-pwn">pwn</span>
-        </div>
-
-        <div class="challenge-card__body">
-          
-          <a class="challenge-card__title" href="/challenges/crazy-notes/">Crazy Notes</a>
-          
-        </div>
-
-        <div class="challenge-card__foot">
-          <span class="diff diff-hard">hard</span>
-          
-          <a href="/challenges/crazy-notes/" class="challenge-card__link">ver writeup →</a>
-          
-        </div>
-      </article>
+        <span class="pl-tag">[pwn]</span>
+        
+        <a href="/challenges/crazy-notes/">Crazy Notes</a>
+        
+        <span class="pl-date">- Advanced Heap Exploitation & FSOP, hard (/HackOn 2026/)</span>
+      </li>
     
       
       
-      <article
-        class="challenge-search-result challenge-card"
+      <li
+        class="challenge-search-result"
         data-search="sessiond stack pivot & srop pwn medium hackon 2026 stack pivot srop sigreturn buffer overflow pwntools writeup ver"
       >
-        <div class="challenge-card__top">
-          <div class="challenge-card__badges">
-            
-            <span class="platform-badge">Stack Pivot & SROP</span>
-            
-            <span class="folder-badge">HackOn 2026</span>
-          </div>
-          <span class="post-card__tag tag-pwn">pwn</span>
-        </div>
-
-        <div class="challenge-card__body">
-          
-          <a class="challenge-card__title" href="/challenges/sessiond/">Sessiond</a>
-          
-        </div>
-
-        <div class="challenge-card__foot">
-          <span class="diff diff-medium">medium</span>
-          
-          <a href="/challenges/sessiond/" class="challenge-card__link">ver writeup →</a>
-          
-        </div>
-      </article>
+        <span class="pl-tag">[pwn]</span>
+        
+        <a href="/challenges/sessiond/">Sessiond</a>
+        
+        <span class="pl-date">- Stack Pivot & SROP, medium (/HackOn 2026/)</span>
+      </li>
     
       
       
-      <article
-        class="challenge-search-result challenge-card"
+      <li
+        class="challenge-search-result"
         data-search="infant notes use after free pwn easy hackon 2026 uaf use after free tcache heap writeup ver"
       >
-        <div class="challenge-card__top">
-          <div class="challenge-card__badges">
-            
-            <span class="platform-badge">Use After Free</span>
-            
-            <span class="folder-badge">HackOn 2026</span>
-          </div>
-          <span class="post-card__tag tag-pwn">pwn</span>
-        </div>
-
-        <div class="challenge-card__body">
-          
-          <a class="challenge-card__title" href="/challenges/infant-notes/">Infant Notes</a>
-          
-        </div>
-
-        <div class="challenge-card__foot">
-          <span class="diff diff-easy">easy</span>
-          
-          <a href="/challenges/infant-notes/" class="challenge-card__link">ver writeup →</a>
-          
-        </div>
-      </article>
+        <span class="pl-tag">[pwn]</span>
+        
+        <a href="/challenges/infant-notes/">Infant Notes</a>
+        
+        <span class="pl-date">- Use After Free, easy (/HackOn 2026/)</span>
+      </li>
     
       
       
-      <article
-        class="challenge-search-result challenge-card"
+      <li
+        class="challenge-search-result"
         data-search="spillme kernel cfh + retspill pwn medium mis retos kernel retspill kpti smap smep qemu module writeup ver"
       >
-        <div class="challenge-card__top">
-          <div class="challenge-card__badges">
-            
-            <span class="platform-badge">Kernel CFH + RetSpill</span>
-            
-            <span class="folder-badge">Mis Retos</span>
-          </div>
-          <span class="post-card__tag tag-pwn">pwn</span>
-        </div>
-
-        <div class="challenge-card__body">
-          
-          <a class="challenge-card__title" href="/challenges/spillme/">SpillMe</a>
-          
-        </div>
-
-        <div class="challenge-card__foot">
-          <span class="diff diff-medium">medium</span>
-          
-          <a href="/challenges/spillme/" class="challenge-card__link">ver writeup →</a>
-          
-        </div>
-      </article>
+        <span class="pl-tag">[pwn]</span>
+        
+        <a href="/challenges/spillme/">SpillMe</a>
+        
+        <span class="pl-date">- Kernel CFH + RetSpill, medium (/Mis Retos/)</span>
+      </li>
     
       
       
-      <article
-        class="challenge-search-result challenge-card"
+      <li
+        class="challenge-search-result"
         data-search="plin plon plin got overwrite pwn easy hackon 2026 got overwrite format string pwntools writeup ver"
       >
-        <div class="challenge-card__top">
-          <div class="challenge-card__badges">
-            
-            <span class="platform-badge">GOT Overwrite</span>
-            
-            <span class="folder-badge">HackOn 2026</span>
-          </div>
-          <span class="post-card__tag tag-pwn">pwn</span>
-        </div>
-
-        <div class="challenge-card__body">
-          
-          <a class="challenge-card__title" href="/challenges/plin-plon-plin/">Plin Plon Plin</a>
-          
-        </div>
-
-        <div class="challenge-card__foot">
-          <span class="diff diff-easy">easy</span>
-          
-          <a href="/challenges/plin-plon-plin/" class="challenge-card__link">ver writeup →</a>
-          
-        </div>
-      </article>
+        <span class="pl-tag">[pwn]</span>
+        
+        <a href="/challenges/plin-plon-plin/">Plin Plon Plin</a>
+        
+        <span class="pl-date">- GOT Overwrite, easy (/HackOn 2026/)</span>
+      </li>
     
       
       
-      <article
-        class="challenge-search-result challenge-card"
+      <li
+        class="challenge-search-result"
         data-search="plin plin plon ret2libc pwn easy hackon 2026 ret2libc libc buffer overflow rop pwntools glibc writeup ver"
       >
-        <div class="challenge-card__top">
-          <div class="challenge-card__badges">
-            
-            <span class="platform-badge">Ret2Libc</span>
-            
-            <span class="folder-badge">HackOn 2026</span>
-          </div>
-          <span class="post-card__tag tag-pwn">pwn</span>
-        </div>
-
-        <div class="challenge-card__body">
-          
-          <a class="challenge-card__title" href="/challenges/plin-plin-plon/">Plin Plin Plon</a>
-          
-        </div>
-
-        <div class="challenge-card__foot">
-          <span class="diff diff-easy">easy</span>
-          
-          <a href="/challenges/plin-plin-plon/" class="challenge-card__link">ver writeup →</a>
-          
-        </div>
-      </article>
+        <span class="pl-tag">[pwn]</span>
+        
+        <a href="/challenges/plin-plin-plon/">Plin Plin Plon</a>
+        
+        <span class="pl-date">- Ret2Libc, easy (/HackOn 2026/)</span>
+      </li>
     
-  </div>
+  </ul>
 
-  <div id="folder-search-empty" class="challenge-search-empty is-hidden">
+  <p id="folder-search-empty" class="plain-bio is-hidden">
     no hay retos que coincidan con esa búsqueda
-  </div>
+  </p>
 
-  <div style="height:80px;"></div>
 </div>
 
 <script>
@@ -449,17 +290,13 @@
 
 <footer class="footer">
   <div class="footer__inner">
-    <div>
-      <div class="footer__brand">
-        <span class="footer__brand-dot"></span>
-        Zereza's Blog
-      </div>
-      <div class="footer__copy">© 2026 Miguel Peñaranda</div>
+    <div class="footer__brand">
+      <span class="nav__logo-prompt">~$</span> Zereza's Blog
     </div>
     <div class="footer__links">
       <a href="https://github.com/mzereza" target="_blank" rel="noopener">github</a>
-      <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener">linkedin</a>
-      <a href="mailto:mig.penaranda07@gmail.com">email</a>
+      <span class="footer__sep">/</span> <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener">linkedin</a>
+      <span class="footer__sep">/</span> <a href="mailto:mig.penaranda07@gmail.com">email</a>
     </div>
   </div>
 </footer>
