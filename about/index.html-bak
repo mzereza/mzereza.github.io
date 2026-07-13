@@ -89,11 +89,6 @@
             </a>
             
             
-            <a href="mailto:mig.penaranda07@gmail.com" class="about-link">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
-              email
-            </a>
-            
           </div>
           <div class="about-stat-row">
             <div class="about-stat">
@@ -129,7 +124,7 @@
       <div class="about-section-label">contacto</div>
       <p>
         La mejor forma es por
-        <a href="mailto:mig.penaranda07@gmail.com" style="color:var(--accent)">email</a> o
+        
         <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener" style="color:var(--accent)">LinkedIn</a>.
         También puedes ver mi trabajo en <a href="https://github.com/mzereza" target="_blank" rel="noopener" style="color:var(--accent)">GitHub</a>.
       </p>
@@ -147,7 +142,7 @@
     <div class="footer__links">
       <a href="https://github.com/mzereza" target="_blank" rel="noopener">github</a>
       <span class="footer__sep">/</span> <a href="https://linkedin.com/in/miguel-t-pe%C3%B1aranda-padilla-227076372" target="_blank" rel="noopener">linkedin</a>
-      <span class="footer__sep">/</span> <a href="mailto:mig.penaranda07@gmail.com">email</a>
+      
     </div>
   </div>
 </footer>
