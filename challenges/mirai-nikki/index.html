@@ -348,7 +348,22 @@
 <span class="p">}</span>
 </pre></td></tr></tbody></table></code></pre></div></div>
 
-<p>En el source podemos ver una vulnerabilidad muy obvia, <strong>cuando se hace <code class="language-plaintext highlighter-rouge">free()</code> de un chunk no se borra su referencia</strong>, y podemos editar el contenido de chunks liberados</p>
+<p>El programa es un menú que a simple vista nos deja hacer 3 cosas:</p>
+
+<p><img src="/assets/img/challenges/mirai-nikki/menu.png" alt="Menu" /><br />
+<em>Captura del menu cuando ejecutamos el binario</em></p>
+
+<ul>
+  <li><strong><em>add:</em></strong> Alocar un chunk con <code class="language-plaintext highlighter-rouge">malloc()</code> de tamaño entre 0x8 y 0x500 en <code class="language-plaintext highlighter-rouge">nikkis[idx]</code> con idx entre 0-7</li>
+  <li><strong><em>delete:</em></strong> Liberar un chunk con <code class="language-plaintext highlighter-rouge">free()</code> de <code class="language-plaintext highlighter-rouge">nikkis[idx]</code> con idx entre 0-7</li>
+  <li><strong><em>edit:</em></strong> Escribir con <code class="language-plaintext highlighter-rouge">read()</code> en un chunk de <code class="language-plaintext highlighter-rouge">nikkis[idx]</code> con idx entre 0-7 y size = <code class="language-plaintext highlighter-rouge">sizes[idx]</code></li>
+</ul>
+
+<blockquote>
+  <p>Es importante que al escribir con <code class="language-plaintext highlighter-rouge">read()</code> podemos escribir nullbytes (\x00) sin que se corte la string</p>
+</blockquote>
+
+<p>En el source podemos ver una vulnerabilidad muy obvia, <strong>cuando se hace <code class="language-plaintext highlighter-rouge">free()</code> de un chunk no se borra su referencia de <code class="language-plaintext highlighter-rouge">nikkis[idx]</code></strong>, y podemos editar el contenido de chunks liberados con <strong><em>edit</em></strong></p>
 
 <p>Tambien hay una función <code class="language-plaintext highlighter-rouge">predict()</code> que no sale en el menú que te leakea el 4 nibble menos significativo de la dirección en <code class="language-plaintext highlighter-rouge">nikkis[0]</code></p>
 
@@ -510,9 +525,14 @@
 
 <p>Lo que yo hice fue liberar la <code class="language-plaintext highlighter-rouge">tcache_perthread_struct</code> y conseguir que se splittee alocando 2 chunks en ese lugar, al hacerlo acabaran direcciones de libc en dos <code class="language-plaintext highlighter-rouge">tcache_entry *entries</code>. El primero se aloca solamente para que el segundo caiga en las <code class="language-plaintext highlighter-rouge">tcache_entry* entries[TCACHE_MAX_BINS]</code></p>
 
-<p>Para que esto funcione necesitamos que cuando liberemos la <code class="language-plaintext highlighter-rouge">tcache_perthread_struct</code> no vaya a la <em>tcache</em> para que , podemos conseguir eso editando los <code class="language-plaintext highlighter-rouge">num_slots[TCACHE_MAX_BINS]</code>. Tambíen haciendo esto se consolidará con el chunk libre que tiene justo después.</p>
+<p>Para que esto funcione necesitamos que cuando liberemos la <code class="language-plaintext highlighter-rouge">tcache_perthread_struct</code> no vaya a la <em>tcache</em> para que el chunk liberado pueda splittear en dos mas pequeños, podemos conseguir eso editando los <code class="language-plaintext highlighter-rouge">num_slots[TCACHE_MAX_BINS]</code>. Tambíen haciendo esto se consolidará con el chunk libre que tiene justo después.</p>
 
-<p>Si ponemos todoss a 0, cuando liberemos la <code class="language-plaintext highlighter-rouge">tcache_perthread_struct</code>, esta caera en las smallbins, la gracia es que un chunk en la smallbins puede splittear cuando se pide un chunk mas pequeño</p>
+<p>Si ponemos todoss a 0, cuando liberemos la <code class="language-plaintext highlighter-rouge">tcache_perthread_struct</code>, esta caera en las smallbins, la gracia es que un chunk en la smallbins puede splittear cuando se pide un chunk mas pequeño.</p>
+
+<p>Esto pasa por que al poner una <code class="language-plaintext highlighter-rouge">num_slots[]</code> a 0, la tcache se cree que esta llena para ese size</p>
+
+<p><img src="/assets/img/challenges/mirai-nikki/pwncollege-after-tcache.png" alt="What happens after tcache" />
+<em>Source: <a href="https://pwn.college/software-exploitation/dynamic-allocator-exploitation/">https://pwn.college/software-exploitation/dynamic-allocator-exploitation/</a></em></p>
 
 <p>Además acaban cayendo 2 direcciónes de libc en las <code class="language-plaintext highlighter-rouge">tcache_entry* entries</code>, esto pasa por que al splittearse el <em>chunk A</em>, el <em>chunk B</em> queda liberado y va a la <em>unsorted bin</em>. Al ser el unico chunk en la <em>unsorted bin</em> en el <em>fd</em> y <em>bk</em> se van a colocar la dirección de <code class="language-plaintext highlighter-rouge">&lt;main_arena&gt;+96</code></p>
 
@@ -966,8 +986,8 @@
 <span class="n">fake_wide_data</span> <span class="o">=</span> <span class="n">malloc_hook</span><span class="o">-</span><span class="mh">0xe0</span>
 <span class="n">fake_wide_vtable</span> <span class="o">=</span> <span class="n">free_hook</span><span class="o">-</span><span class="mh">0x68</span>
 
-<span class="nf">edit</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nf">p64</span><span class="p">(</span><span class="n">malloc_hook</span><span class="p">))</span>
-
+<span class="nf">edit</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nf">p64</span><span class="p">(</span><span class="n">malloc_hook</span><span class="p">))</span> <span class="c1"># Escribiendo la direccion de __malloc_hook en la entry de size 0x210 de la tcache
+</span>
 <span class="nf">add</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mh">0x200</span><span class="p">)</span>
 <span class="nf">edit</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nf">p64</span><span class="p">(</span><span class="n">fake_wide_vtable</span><span class="p">)</span><span class="o">+</span><span class="nf">p64</span><span class="p">(</span><span class="n">system</span><span class="p">))</span> <span class="c1"># Escribiendo fake_wide_vtable en __malloc_hook y system en __free_hook
 </span></pre></td></tr></tbody></table></code></pre></div></div>
@@ -1159,8 +1179,8 @@
 <span class="n">fake_wide_data</span> <span class="o">=</span> <span class="n">malloc_hook</span><span class="o">-</span><span class="mh">0xe0</span>
 <span class="n">fake_wide_vtable</span> <span class="o">=</span> <span class="n">free_hook</span><span class="o">-</span><span class="mh">0x68</span>
 
-<span class="nf">edit</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nf">p64</span><span class="p">(</span><span class="n">malloc_hook</span><span class="p">))</span>
-
+<span class="nf">edit</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nf">p64</span><span class="p">(</span><span class="n">malloc_hook</span><span class="p">))</span> <span class="c1"># Escribiendo la direccion de __malloc_hook en la entry de size 0x210 de la tcache
+</span>
 <span class="nf">add</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mh">0x200</span><span class="p">)</span>
 <span class="nf">edit</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nf">p64</span><span class="p">(</span><span class="n">fake_wide_vtable</span><span class="p">)</span><span class="o">+</span><span class="nf">p64</span><span class="p">(</span><span class="n">system</span><span class="p">))</span> <span class="c1"># Escribiendo fake_wide_vtable en __malloc_hook y system en __free_hook
 </span>
