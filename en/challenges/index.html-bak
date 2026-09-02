@@ -103,6 +103,13 @@
       </a>
     
       
+      <a class="folder-card" href="/en/challenges/compfest-2026/" data-search="compfestctf 2026 challenges and exercises from the compfestctf 2026 ">
+        <div class="folder-card__media"><img src="/assets/img/challenges-folders/compfest_logo.jpeg" alt="CompfestCTF 2026"></div>
+        <div class="folder-card__body"><p class="folder-card__eyebrow">folder</p><h3 class="folder-card__title">CompfestCTF 2026</h3><p class="folder-card__desc">Challenges and exercises from the CompfestCTF 2026</p><p class="folder-card__meta">0 challenges</p></div>
+        <span class="folder-card__arrow">open →</span>
+      </a>
+    
+      
       <a class="folder-card" href="/en/challenges/mis-retos/" data-search="my challenges challenges created by me. spillme kernel cfh + retspill pwn medium kernel retspill kpti smap smep qemu module ">
         <div class="folder-card__media"><img src="/assets/img/challenges-folders/logo-mis-retos.png" alt="My Challenges"></div>
         <div class="folder-card__body"><p class="folder-card__eyebrow">folder</p><h3 class="folder-card__title">My Challenges</h3><p class="folder-card__desc">Challenges created by me.</p><p class="folder-card__meta">1 challenges</p></div>

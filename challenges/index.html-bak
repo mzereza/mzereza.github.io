@@ -71,12 +71,12 @@
     
     
     <div style="background:var(--bg-card);border:1px solid var(--border-card);border-radius:12px;padding:14px 20px;min-width:100px;text-align:center;">
-      <div style="font-family:var(--font);font-size:24px;font-weight:700;color:var(--accent);">6</div>
+      <div style="font-family:var(--font);font-size:24px;font-weight:700;color:var(--accent);">7</div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">total</div>
     </div>
     
     <div style="background:var(--bg-card);border:1px solid var(--border-card);border-radius:12px;padding:14px 20px;min-width:100px;text-align:center;">
-      <div style="font-family:var(--font);font-size:24px;font-weight:700;color:var(--peach);">6</div>
+      <div style="font-family:var(--font);font-size:24px;font-weight:700;color:var(--peach);">7</div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">pwn</div>
     </div>
     
@@ -147,6 +147,26 @@
       
       <a
         class="folder-card"
+        href="/challenges/compfest-2026/"
+        data-search="compfestctf 2026 retos del compfestctf 2026 未来日記 (mirai nikki) advanced heap exploitation & fsop pwn hard uaf use after free unsorted bin heap tcache poisoning fsop house of water "
+      >
+        
+        <div class="folder-card__media">
+          <img src="/assets/img/challenges-folders/compfest_logo.jpeg" alt="CompfestCTF 2026">
+        </div>
+        
+        <div class="folder-card__body">
+          <p class="folder-card__eyebrow">carpeta</p>
+          <h3 class="folder-card__title">CompfestCTF 2026</h3>
+          <p class="folder-card__desc">Retos del CompfestCTF 2026</p>
+          <p class="folder-card__meta">1 retos</p>
+        </div>
+        <span class="folder-card__arrow">abrir →</span>
+      </a>
+    
+      
+      <a
+        class="folder-card"
         href="/challenges/mis-retos/"
         data-search="mis retos retos creados por mi. spillme kernel cfh + retspill pwn medium kernel retspill kpti smap smep qemu module "
       >
@@ -186,6 +206,36 @@
 
   <div class="challenge-grid is-hidden" id="challenge-search-results">
     
+    
+      
+      
+      <article
+        class="challenge-search-result challenge-card"
+        data-search="未来日記 (mirai nikki) advanced heap exploitation & fsop pwn hard compfestctf 2026 uaf use after free unsorted bin heap tcache poisoning fsop house of water writeup ver"
+      >
+        <div class="challenge-card__top">
+          <div class="challenge-card__badges">
+            
+            <span class="platform-badge">Advanced Heap Exploitation & FSOP</span>
+            
+            <span class="folder-badge">CompfestCTF 2026</span>
+          </div>
+          <span class="post-card__tag tag-pwn">pwn</span>
+        </div>
+
+        <div class="challenge-card__body">
+          
+          <a class="challenge-card__title" href="/challenges/mirai-nikki/">未来日記 (Mirai Nikki)</a>
+          
+        </div>
+
+        <div class="challenge-card__foot">
+          <span class="diff diff-hard">hard</span>
+          
+          <a href="/challenges/mirai-nikki/" class="challenge-card__link">ver writeup →</a>
+          
+        </div>
+      </article>
     
       
       

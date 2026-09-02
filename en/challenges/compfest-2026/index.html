@@ -7,30 +7,30 @@
 
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TryHackMe — Zereza's Blog</title>
+  <title>CompfestCTF 2026 — Zereza's Blog</title>
   <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación.">
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000000'/><rect x='1' y='1' width='30' height='30' fill='none' stroke='%2300FF00' stroke-width='2'/><text x='5' y='23' font-family='monospace' font-size='16' fill='%2300FF00'>&gt;_</text></svg>">
   <!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>TryHackMe | Zereza’s Blog</title>
+<title>CompfestCTF 2026 | Zereza’s Blog</title>
 <meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="TryHackMe" />
+<meta property="og:title" content="CompfestCTF 2026" />
 <meta name="author" content="Miguel Peñaranda" />
-<meta property="og:locale" content="es" />
+<meta property="og:locale" content="en" />
 <meta name="description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación." />
 <meta property="og:description" content="Blog de ciberseguridad. Writeups, notas técnicas e investigación." />
-<link rel="canonical" href="http://0.0.0.0:4000/challenges/tryhackme/" />
-<meta property="og:url" content="http://0.0.0.0:4000/challenges/tryhackme/" />
+<link rel="canonical" href="http://0.0.0.0:4000/en/challenges/compfest-2026/" />
+<meta property="og:url" content="http://0.0.0.0:4000/en/challenges/compfest-2026/" />
 <meta property="og:site_name" content="Zereza’s Blog" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="TryHackMe" />
+<meta property="twitter:title" content="CompfestCTF 2026" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Miguel Peñaranda"},"description":"Blog de ciberseguridad. Writeups, notas técnicas e investigación.","headline":"TryHackMe","url":"http://0.0.0.0:4000/challenges/tryhackme/"}</script>
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Miguel Peñaranda"},"description":"Blog de ciberseguridad. Writeups, notas técnicas e investigación.","headline":"CompfestCTF 2026","url":"http://0.0.0.0:4000/en/challenges/compfest-2026/"}</script>
 <!-- End Jekyll SEO tag -->
 
 </head>
@@ -38,20 +38,20 @@
 
 <nav class="nav">
   <div class="nav__inner">
-    <a href="/" class="nav__logo">
+    <a href="/en/" class="nav__logo">
       <span class="nav__logo-prompt">~$</span>
       Zereza's Blog<span class="nav__logo-cursor">_</span>
     </a>
     <ul class="nav__links" id="nav-links">
-      <li><a href="/" >inicio</a></li>
-      <li><a href="/about/" >whoami</a></li>
-      <li><a href="/posts/" >posts</a></li>
-      <li><a href="/challenges/" class="active">retos</a></li>
+      <li><a href="/en/" >home</a></li>
+      <li><a href="/en/about/" >whoami</a></li>
+      <li><a href="/en/posts/" >posts</a></li>
+      <li><a href="/en/challenges/" class="active">challenges</a></li>
     </ul>
     <div class="nav__tools">
       <div class="lang-switch" aria-label="Language switcher">
-        <a href="/challenges/tryhackme/" class="active">ES</a>
-        <a href="/en/challenges/tryhackme/" >EN</a>
+        <a href="/challenges/compfest-2026/" >ES</a>
+        <a href="/en/challenges/compfest-2026/" class="active">EN</a>
       </div>
       <a href="https://github.com/mzereza" target="_blank" rel="noopener" class="nav__cta">github ↗</a>
     </div>
@@ -67,11 +67,8 @@
   
 
   
-
-  
-
-  
-
+    
+    
 
 
 
@@ -92,29 +89,31 @@
 
 <div class="page">
   <article class="post-wrap">
-    <a href="/challenges/" class="post-back">← volver a carpetas</a>
+    <a href="/en/challenges/" class="post-back">← back to folders</a>
 
     <header class="folder-page-header">
-      <p class="folder-page-header__eyebrow">carpeta</p>
-      <h1></h1>
+      <p class="folder-page-header__eyebrow">folder</p>
+      <h1>CompfestCTF 2026</h1>
       
-      <p class="folder-page-header__meta">0 retos</p>
+      <p class="folder-page-header__desc">Challenges and exercises from the CompfestCTF 2026</p>
+      
+      <p class="folder-page-header__meta">0 challenges</p>
     </header>
 
     <div class="challenge-search">
-      <label class="challenge-search__label" for="challenge-page-search-input">buscar reto en </label>
+      <label class="challenge-search__label" for="challenge-page-search-input">search challenge in CompfestCTF 2026</label>
       <div class="challenge-search__input-wrap">
         <input
           id="challenge-page-search-input"
           class="challenge-search__input"
           type="search"
-          placeholder="nombre, categoría, dificultad o keywords"
+          placeholder="name, category, difficulty or keywords"
           autocomplete="off"
         >
-        <span class="challenge-search__hint">filtra sólo los retos de esta carpeta</span>
+        <span class="challenge-search__hint">filters only the challenges in this folder</span>
       </div>
       <p class="challenge-search__status">
-        <span id="challenge-page-status-label">retos visibles</span>: <span id="challenge-page-visible">0</span>
+        <span id="challenge-page-status-label">visible challenges</span>: <span id="challenge-page-visible">0</span>
       </p>
     </div>
 
@@ -123,7 +122,7 @@
 
     </div>
     <div id="challenge-page-empty" class="challenge-search-empty is-hidden">
-      no hay retos en esta carpeta que coincidan con esa búsqueda
+      no challenges in this folder match that search
     </div>
   </article>
 </div>
@@ -160,13 +159,13 @@
           row.hidden = false;
         });
         resultsGrid.classList.remove('is-hidden');
-        statusLabel.textContent = "retos visibles";
+        statusLabel.textContent = "visible challenges";
         visibleCount.textContent = String(rows.length);
         emptyState.classList.add('is-hidden');
         return;
       }
 
-      statusLabel.textContent = "retos encontrados";
+      statusLabel.textContent = "found challenges";
 
       rows.forEach(function (row) {
         var haystack = normalize(row.getAttribute('data-search'));
