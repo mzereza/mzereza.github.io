@@ -671,6 +671,29 @@
 43
 44
 45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
 </pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">_IO_FILE</span>
 <span class="p">{</span>
   <span class="kt">int</span> <span class="n">_flags</span><span class="p">;</span>		<span class="cm">/* High-order word is _IO_MAGIC; rest is flags. */</span>
@@ -708,6 +731,29 @@
   <span class="n">_IO_lock_t</span> <span class="o">*</span><span class="n">_lock</span><span class="p">;</span>
 <span class="cp">#ifdef _IO_USE_OLD_IO_FILE
 </span><span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">_IO_FILE_complete</span>
+<span class="p">{</span>
+  <span class="k">struct</span> <span class="n">_IO_FILE</span> <span class="n">_file</span><span class="p">;</span>
+<span class="cp">#endif
+</span>  <span class="n">__off64_t</span> <span class="n">_offset</span><span class="p">;</span>
+  <span class="cm">/* Wide character stream stuff.  */</span>
+  <span class="k">struct</span> <span class="n">_IO_codecvt</span> <span class="o">*</span><span class="n">_codecvt</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">_IO_wide_data</span> <span class="o">*</span><span class="n">_wide_data</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">_IO_FILE</span> <span class="o">*</span><span class="n">_freeres_list</span><span class="p">;</span>
+  <span class="kt">void</span> <span class="o">*</span><span class="n">_freeres_buf</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">_IO_FILE</span> <span class="o">**</span><span class="n">_prevchain</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">_mode</span><span class="p">;</span>
+<span class="cp">#if __WORDSIZE == 64
+</span>  <span class="kt">int</span> <span class="n">_unused3</span><span class="p">;</span>
+<span class="cp">#endif
+</span>  <span class="n">__uint64_t</span> <span class="n">_total_written</span><span class="p">;</span>
+<span class="cp">#if __WORDSIZE == 32
+</span>  <span class="kt">int</span> <span class="n">_unused3</span><span class="p">;</span>
+<span class="cp">#endif
+</span>  <span class="cm">/* Make sure we don't get into trouble again.  */</span>
+  <span class="kt">char</span> <span class="n">_unused2</span><span class="p">[</span><span class="mi">12</span> <span class="o">*</span> <span class="k">sizeof</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="o">-</span> <span class="mi">5</span> <span class="o">*</span> <span class="k">sizeof</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)];</span>
+<span class="p">};</span>
 
 <span class="k">typedef</span> <span class="k">struct</span> <span class="n">_IO_FILE</span> <span class="kt">FILE</span><span class="p">;</span>
 
@@ -904,7 +950,7 @@
 
 <h3 id="controlando-_lock">Controlando _lock</h3>
 
-<p><code class="language-plaintext highlighter-rouge">_lock</code> voy a hacer que apunte a <code class="language-plaintext highlighter-rouge">_IO_2_1_stdout_+0xd0</code>, ya que el valor es 0 y esa dirección no se usa para nada</p>
+<p>Voy a hacer que <code class="language-plaintext highlighter-rouge">_lock</code> que apunte a <code class="language-plaintext highlighter-rouge">_IO_2_1_stdout_+0xd0</code>, ya que el valor es 0 y esa dirección no se usa para nada</p>
 
 <h3 id="controlando-la-vtable">Controlando la vtable</h3>
 
@@ -932,7 +978,7 @@
 
 <p><img src="/assets/img/challenges/mirai-nikki/fsop-mirai-nikki.png" alt="Fake File Struct" /></p>
 
-<h2 id="armando-el-exploit">Armando el Exploit</h2>
+<h2 id="programando-el-exploit">Programando el Exploit</h2>
 
 <p>Bueno vamos a hacer el exploit no?</p>
 
